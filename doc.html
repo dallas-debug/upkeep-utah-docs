@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upkeep Utah — Document</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #f4f6f8;
+    color: #1a1a1a;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .page {
+    max-width: 680px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: #1A3646;
+    color: #fff;
+    padding: 28px 24px 22px;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .header p {
+    font-size: 13px;
+    opacity: 0.82;
+    margin-bottom: 2px;
+  }
+
+  /* ── Document title badge ── */
+  .doc-type {
+    padding: 18px 24px;
+    border-bottom: 1px solid #e4e8ec;
+  }
+  .doc-type h2 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #1A3646;
+  }
+  .doc-type .updated {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  /* ── Sections ── */
+  .section {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e4e8ec;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #1A3646;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+  .section p {
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  /* ── Line items ── */
+  .line-item {
+    padding: 14px 0;
+    border-bottom: 1px solid #eef1f3;
+  }
+  .line-item:last-child { border-bottom: none; }
+  .li-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .li-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A3646;
+  }
+  .li-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A3646;
+    white-space: nowrap;
+    margin-left: 12px;
+  }
+  .sub-tasks {
+    margin: 6px 0 0 18px;
+    list-style: disc;
+  }
+  .sub-tasks li {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 2px;
+  }
+
+  /* ── Notes ── */
+  .notes-text {
+    font-size: 14px;
+    color: #444;
+    white-space: pre-wrap;
+  }
+
+  /* ── Total bar ── */
+  .total-bar {
+    background: #1A3646;
+    color: #fff;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .total-bar span:first-child {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .total-bar span:last-child {
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  .guarantee {
+    text-align: center;
+    padding: 14px 24px;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+    border-bottom: 1px solid #e4e8ec;
+  }
+
+  /* ── Pay Now ── */
+  .pay-now-wrap {
+    padding: 20px 24px;
+    text-align: center;
+    border-bottom: 1px solid #e4e8ec;
+  }
+  .pay-now-btn {
+    display: inline-block;
+    background: #2E7D32;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 14px 48px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  /* ── Approval card ── */
+  .approval {
+    padding: 24px;
+  }
+  .approval h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1A3646;
+    margin-bottom: 16px;
+  }
+  .approval label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .approval input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    outline: none;
+  }
+  .approval input[type="text"]:focus {
+    border-color: #1A3646;
+  }
+  .date-display {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 16px;
+  }
+  .canvas-wrap {
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    position: relative;
+    touch-action: none;
+  }
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 300px;
+    cursor: crosshair;
+  }
+  .canvas-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: #bbb;
+    pointer-events: none;
+  }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .btn-clear {
+    flex: 1;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+  }
+  .btn-submit {
+    flex: 2;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    background: #1A3646;
+    color: #fff;
+    cursor: pointer;
+  }
+  .btn-clear:active { background: #f0f0f0; }
+  .btn-submit:active { background: #12262f; }
+
+  /* ── Thank-you state ── */
+  .thank-you {
+    text-align: center;
+    padding: 40px 24px;
+    color: #2E7D32;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  /* ── Error state ── */
+  .error-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 32px;
+    text-align: center;
+  }
+  .error-page h2 {
+    font-size: 20px;
+    color: #1A3646;
+    margin-bottom: 12px;
+  }
+  .error-page p {
+    font-size: 15px;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<div class="page" id="page"></div>
+
+<script>
+(function() {
+  var page = document.getElementById('page');
+
+  /* ── Decode data parameter ── */
+  function getWorkOrder() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var raw = params.get('data');
+      if (!raw) return null;
+      /* URL-safe base64 → standard base64 */
+      var b64 = raw.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4 !== 0) b64 += '=';
+      var json = atob(b64);
+      return JSON.parse(json);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  var wo = getWorkOrder();
+
+  if (!wo) {
+    page.innerHTML =
+      '<div class="error-page">' +
+        '<h2>Unable to load document.</h2>' +
+        '<p>Please contact Upkeep Utah.</p>' +
+      '</div>';
+    return;
+  }
+
+  /* ── Helpers ── */
+  function esc(s) {
+    if (typeof s !== 'string') return '';
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+  }
+
+  function currency(n) {
+    var v = parseFloat(n) || 0;
+    return '$' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function statusLabel(s) {
+    if (!s) return 'ESTIMATE';
+    return s.replace(/_/g, ' ');
+  }
+
+  function todayString() {
+    var d = new Date();
+    var opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    return d.toLocaleDateString('en-US', opts);
+  }
+
+  /* ── Calculate total ── */
+  var items = wo.lineItems || [];
+  var total = 0;
+  for (var i = 0; i < items.length; i++) {
+    total += parseFloat(items[i].price) || 0;
+  }
+
+  /* ── Build HTML ── */
+  var html = '';
+
+  /* Header */
+  html += '<div class="header">';
+  html += '<h1>Upkeep Utah Inc.</h1>';
+  html += '<p>Ogden, Utah</p>';
+  html += '<p>Utah B100 General Contractor</p>';
+  html += '</div>';
+
+  /* Doc type */
+  html += '<div class="doc-type">';
+  html += '<h2>' + esc(statusLabel(wo.status)) + '</h2>';
+  html += '<div class="updated">Updated ' + todayString() + '</div>';
+  html += '</div>';
+
+  /* Customer info */
+  html += '<div class="section">';
+  html += '<div class="section-label">Customer</div>';
+  if (wo.customerName)    html += '<p><strong>' + esc(wo.customerName) + '</strong></p>';
+  if (wo.customerAddress) html += '<p>' + esc(wo.customerAddress) + '</p>';
+  if (wo.customerPhone)   html += '<p>' + esc(wo.customerPhone) + '</p>';
+  if (wo.customerEmail)   html += '<p>' + esc(wo.customerEmail) + '</p>';
+  html += '</div>';
+
+  /* Schedule */
+  if (wo.scheduledDate) {
+    html += '<div class="section">';
+    html += '<div class="section-label">Schedule</div>';
+    html += '<p>' + esc(wo.scheduledDate) + '</p>';
+    html += '</div>';
+  }
+
+  /* Line items */
+  if (items.length > 0) {
+    html += '<div class="section">';
+    html += '<div class="section-label">Scope of Work</div>';
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      html += '<div class="line-item">';
+      html += '<div class="li-header">';
+      html += '<span class="li-title">' + esc(it.title) + '</span>';
+      html += '<span class="li-price">' + currency(it.price) + '</span>';
+      html += '</div>';
+      var subs = it.subTasks || [];
+      if (subs.length > 0) {
+        html += '<ul class="sub-tasks">';
+        for (var j = 0; j < subs.length; j++) {
+          html += '<li>' + esc(subs[j]) + '</li>';
+        }
+        html += '</ul>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  /* Notes */
+  if (wo.notes && wo.notes.trim()) {
+    html += '<div class="section">';
+    html += '<div class="section-label">Contractor Notes</div>';
+    html += '<p class="notes-text">' + esc(wo.notes) + '</p>';
+    html += '</div>';
+  }
+
+  /* Total bar */
+  html += '<div class="total-bar">';
+  html += '<span>TOTAL</span>';
+  html += '<span>' + currency(total) + '</span>';
+  html += '</div>';
+
+  /* Guarantee */
+  html += '<div class="guarantee">Never surprise charges, guaranteed.</div>';
+
+  /* Pay Now (INVOICE only) */
+  var st = (wo.status || '').toUpperCase();
+  if (st === 'INVOICE') {
+    html += '<div class="pay-now-wrap">';
+    html += '<a class="pay-now-btn" href="https://pay.upkeeputah.com/placeholder">Pay Now</a>';
+    html += '</div>';
+  }
+
+  /* Signature (if already captured) */
+  if (wo.signatureBase64) {
+    html += '<div class="section">';
+    html += '<div class="section-label">Customer Approval</div>';
+    html += '<img src="' + esc(wo.signatureBase64) + '" style="max-width:100%;border:1px solid #ddd;border-radius:6px;" alt="Customer signature">';
+    html += '</div>';
+  }
+
+  /* Approval card */
+  html += '<div class="approval" id="approval-card">';
+  html += '<h3>Customer Approval</h3>';
+  html += '<label for="signer-name">Authorized Signer Name</label>';
+  html += '<input type="text" id="signer-name" placeholder="Full name">';
+  html += '<label>Date</label>';
+  html += '<div class="date-display" id="sig-date">' + todayString() + '</div>';
+  html += '<label>Signature</label>';
+  html += '<div class="canvas-wrap" id="canvas-wrap">';
+  html += '<canvas id="sig-canvas"></canvas>';
+  html += '<span class="canvas-hint" id="canvas-hint">Sign here</span>';
+  html += '</div>';
+  html += '<div class="btn-row">';
+  html += '<button class="btn-clear" id="btn-clear">Clear Signature</button>';
+  html += '<button class="btn-submit" id="btn-submit">Submit Signature</button>';
+  html += '</div>';
+  html += '</div>';
+
+  page.innerHTML = html;
+
+  /* ── Signature canvas logic ── */
+  var canvas = document.getElementById('sig-canvas');
+  var ctx = canvas.getContext('2d');
+  var wrap = document.getElementById('canvas-wrap');
+  var hint = document.getElementById('canvas-hint');
+  var drawing = false;
+  var hasDrawn = false;
+
+  function resizeCanvas() {
+    var rect = wrap.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 300;
+    ctx.strokeStyle = '#1A3646';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+  resizeCanvas();
+  window.addEventListener('resize', function() {
+    if (!hasDrawn) resizeCanvas();
+  });
+
+  function getPos(e) {
+    var rect = canvas.getBoundingClientRect();
+    var scaleX = canvas.width / rect.width;
+    var scaleY = canvas.height / rect.height;
+    if (e.touches && e.touches.length > 0) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    drawing = true;
+    hasDrawn = true;
+    hint.style.display = 'none';
+    var p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
+
+  function moveDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    var p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }
+
+  function endDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    drawing = false;
+  }
+
+  /* Mouse events */
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', moveDraw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+
+  /* Touch events */
+  canvas.addEventListener('touchstart', startDraw, { passive: false });
+  canvas.addEventListener('touchmove', moveDraw, { passive: false });
+  canvas.addEventListener('touchend', endDraw);
+  canvas.addEventListener('touchcancel', endDraw);
+
+  /* Clear */
+  document.getElementById('btn-clear').addEventListener('click', function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hasDrawn = false;
+    hint.style.display = '';
+  });
+
+  /* Submit */
+  document.getElementById('btn-submit').addEventListener('click', function() {
+    var name = document.getElementById('signer-name').value.trim();
+    if (!name) {
+      alert('Please enter the authorized signer name.');
+      return;
+    }
+    if (!hasDrawn) {
+      alert('Please provide a signature before submitting.');
+      return;
+    }
+
+    var customerName = wo.customerName || 'Unknown';
+    var docId = wo.id || 'N/A';
+    var timestamp = new Date().toLocaleString();
+
+    var subject = encodeURIComponent('Signature Received - ' + customerName + ' - ' + docId);
+    var body = encodeURIComponent(
+      'Customer ' + name + ' has signed document ' + docId + ' on ' + timestamp + '.'
+    );
+
+    var mailto = 'mailto:dallas@upkeeputah.com?subject=' + subject + '&body=' + body;
+    window.location.href = mailto;
+
+    /* Replace approval card with thank-you */
+    var card = document.getElementById('approval-card');
+    card.innerHTML = '<div class="thank-you">Thank you! Your signature has been submitted.</div>';
+  });
+
+})();
+</script>
+</body>
+</html>
