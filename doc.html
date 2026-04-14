@@ -306,6 +306,43 @@
     font-size: 15px;
     color: #666;
   }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 40px 24px 32px;
+    border-top: 1px solid #e4e8ec;
+  }
+  .footer .warranty-badge {
+    width: 140px;
+    height: auto;
+    margin: 0 auto 12px;
+    display: block;
+  }
+  .footer .tagline {
+    font-size: 15px;
+    font-style: italic;
+    color: #1A3646;
+    margin-bottom: 24px;
+  }
+  .footer .contact-line {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .footer .legal-line {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #1A3646;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+  .footer .company-line {
+    font-size: 11px;
+    color: #888;
+  }
 </style>
 </head>
 <body>
@@ -484,6 +521,15 @@
   html += '<button class="btn-clear" id="btn-clear">Clear Signature</button>';
   html += '<button class="btn-submit" id="btn-submit">Submit Signature</button>';
   html += '</div>';
+  html += '</div>';
+
+  /* Footer */
+  html += '<div class="footer">';
+  html += '<img src="https://dallas-debug.github.io/upkeep-utah-docs/Warranty.webp" class="warranty-badge" alt="Lifetime Warranty">';
+  html += '<div class="tagline">Built right. Guaranteed for life.</div>';
+  html += '<div class="contact-line">Upkeep Utah | P.O. Box 1118 Ogden, UT 84402 | (801) 814-9627</div>';
+  html += '<div class="legal-line">Property of Upkeep Utah | All Rights Reserved</div>';
+  html += '<div class="company-line">Upkeep Utah Inc. | upkeeputah.com | upkeeputah@gmail.com</div>';
   html += '</div>';
 
   page.innerHTML = html;
