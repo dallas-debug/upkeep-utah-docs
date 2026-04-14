@@ -15,17 +15,17 @@ body {
   min-height: 100vh;
 }
 
-/* ── Header ── */
+/* ── Header (white background, logo + dark text) ── */
 .header {
-  background: #1A3646;
-  color: #fff;
-  padding: 28px 24px 22px;
+  background: #fff;
+  color: #1a1a1a;
+  padding: 24px 24px 16px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 .header-logo {
-  width: 60px;
+  width: 56px;
   height: auto;
   flex-shrink: 0;
 }
@@ -33,57 +33,56 @@ body {
   flex: 1;
 }
 .header h1 {
-  font-size: 26px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
+  margin-bottom: 1px;
+  color: #1a1a1a;
 }
 .header p {
-  font-size: 13px;
-  opacity: 0.82;
-  margin-bottom: 2px;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+  margin-bottom: 1px;
 }
 
-/* ── Document title badge ── */
+/* ── Document title (WORK ORDER / ESTIMATE / INVOICE) ── */
 .doc-type {
-  padding: 18px 24px;
-  border-bottom: 1px solid #e4e8ec;
+  padding: 20px 24px 8px;
 }
 .doc-type h2 {
-  font-size: 28px;
-  font-weight: 800;
+  font-size: 32px;
+  font-weight: 900;
   letter-spacing: 1.5px;
   color: #1A3646;
+  line-height: 1.1;
 }
 .doc-type .updated {
   font-size: 13px;
-  color: #666;
-  margin-top: 4px;
+  color: #555;
+  margin-top: 6px;
 }
 
 /* ── Sections ── */
 .section {
-  padding: 20px 24px;
-  border-bottom: 1px solid #e4e8ec;
+  padding: 14px 24px;
 }
 .section-label {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: #1A3646;
-  margin-bottom: 10px;
-  opacity: 0.7;
+  color: #1a1a1a;
+  margin-bottom: 2px;
 }
 .section p {
   font-size: 15px;
-  margin-bottom: 4px;
+  color: #333;
+  margin-bottom: 2px;
 }
 
 /* ── Line items ── */
 .line-item {
-  padding: 14px 0;
-  border-bottom: 1px solid #eef1f3;
+  padding: 10px 0;
 }
 .line-item:last-child { border-bottom: none; }
 .li-header {
@@ -94,12 +93,13 @@ body {
 .li-title {
   font-size: 15px;
   font-weight: 600;
-  color: #1A3646;
+  color: #1a1a1a;
+  text-decoration: underline;
 }
 .li-price {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1A3646;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
   white-space: nowrap;
   margin-left: 12px;
 }
@@ -108,9 +108,10 @@ body {
   list-style: disc;
 }
 .sub-tasks li {
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 2px;
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 3px;
+  line-height: 1.5;
 }
 
 /* ── Notes ── */
@@ -118,41 +119,44 @@ body {
   font-size: 14px;
   color: #444;
   white-space: pre-wrap;
+  line-height: 1.5;
 }
 
 /* ── Total bar ── */
 .total-bar {
   background: #1A3646;
   color: #fff;
-  padding: 20px 24px;
+  padding: 28px 24px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
+  align-items: baseline;
+  gap: 12px;
 }
 .total-bar span:first-child {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 3px;
 }
 .total-bar span:last-child {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 800;
 }
 
+/* ── Guarantee ── */
 .guarantee {
   text-align: center;
-  padding: 14px 24px;
-  font-size: 13px;
-  color: #666;
-  font-style: italic;
-  border-bottom: 1px solid #e4e8ec;
+  padding: 30px 24px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1A3646;
+  font-style: normal;
+  line-height: 1.4;
 }
 
 /* ── Pay Now ── */
 .pay-now-wrap {
   padding: 20px 24px;
   text-align: center;
-  border-bottom: 1px solid #e4e8ec;
 }
 .pay-now-btn {
   display: inline-block;
@@ -169,50 +173,63 @@ body {
 
 /* ── Approval card ── */
 .approval {
-  padding: 24px;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 32px 28px;
 }
 .approval h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #1A3646;
-  margin-bottom: 16px;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 24px;
 }
 .approval label {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1A3646;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   margin-bottom: 6px;
 }
 .approval input[type="text"] {
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   outline: none;
+  color: #666;
+}
+.approval input[type="text"]::placeholder {
+  color: #999;
 }
 .approval input[type="text"]:focus {
   border-color: #1A3646;
+  color: #1a1a1a;
 }
 .date-display {
-  font-size: 14px;
-  color: #444;
-  margin-bottom: 16px;
+  font-size: 15px;
+  color: #333;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 18px;
 }
 .canvas-wrap {
-  border: 2px solid #ccc;
-  border-radius: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   position: relative;
   touch-action: none;
 }
 .canvas-wrap canvas {
   display: block;
   width: 100%;
-  height: 300px;
+  height: 180px;
   cursor: crosshair;
 }
 .canvas-hint {
@@ -226,25 +243,28 @@ body {
 }
 .btn-row {
   display: flex;
+  flex-direction: column-reverse;
   gap: 10px;
   margin-top: 4px;
 }
 .btn-clear {
-  flex: 1;
-  padding: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  border: 2px solid #ccc;
-  border-radius: 6px;
-  background: #fff;
-  color: #555;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 400;
+  border: none;
+  background: transparent;
+  color: #1A3646;
   cursor: pointer;
+  text-decoration: underline;
+  text-align: left;
 }
 .btn-submit {
-  flex: 2;
-  padding: 12px;
+  width: 100%;
+  padding: 16px;
   font-size: 14px;
   font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
   border: none;
   border-radius: 6px;
   background: #1A3646;
@@ -256,7 +276,7 @@ body {
   opacity: 0.6;
   cursor: not-allowed;
 }
-.btn-clear:active { background: #f0f0f0; }
+.btn-clear:active { opacity: 0.7; }
 .btn-submit:active:not(:disabled) { background: #12262f; }
 
 /* ── Frozen state ── */
@@ -314,20 +334,19 @@ body {
 /* ── Footer ── */
 .footer {
   text-align: center;
-  padding: 40px 24px 32px;
-  border-top: 1px solid #e4e8ec;
+  padding: 48px 24px 32px;
 }
 .footer .warranty-badge {
-  width: 140px;
+  width: 120px;
   height: auto;
-  margin: 0 auto 12px;
+  margin: 0 auto 14px;
   display: block;
 }
 .footer .tagline {
   font-size: 15px;
   font-style: italic;
   color: #1A3646;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 .footer .contact-line {
   font-size: 13px;
@@ -340,7 +359,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #1A3646;
-  margin-top: 12px;
+  margin-top: 14px;
   margin-bottom: 4px;
 }
 .footer .company-line {
