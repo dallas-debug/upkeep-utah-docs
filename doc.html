@@ -246,9 +246,37 @@
     background: #1A3646;
     color: #fff;
     cursor: pointer;
+    transition: opacity 0.3s;
+  }
+  .btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
   .btn-clear:active { background: #f0f0f0; }
-  .btn-submit:active { background: #12262f; }
+  .btn-submit:active:not(:disabled) { background: #12262f; }
+
+  /* ── Frozen state ── */
+  .approval.frozen input[type="text"] {
+    background-color: #f8f8f8;
+    color: #555;
+    border-color: #ccc;
+    cursor: not-allowed;
+  }
+  .approval.frozen .canvas-wrap {
+    border-style: solid;
+    border-color: #ccc;
+    background: #f8f8f8;
+  }
+  .approval.frozen canvas {
+    cursor: default;
+    pointer-events: none;
+  }
+  .approval.frozen .canvas-hint {
+    display: none;
+  }
+  .approval.frozen .btn-clear {
+    display: none;
+  }
 
   /* ── Thank-you state ── */
   .thank-you {
@@ -286,6 +314,8 @@
 
 <script>
 (function() {
+  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEkYZ8hni7Z6XIFI9t44dgc8XhphC52BvRV8IGiZjoXwU-C5bjuikxgYZPueTu-cvs/exec';
+
   var page = document.getElementById('page');
 
   /* ── Decode data parameter ── */
@@ -294,7 +324,6 @@
       var params = new URLSearchParams(window.location.search);
       var raw = params.get('data');
       if (!raw) return null;
-      /* URL-safe base64 → standard base64 */
       var b64 = raw.replace(/-/g, '+').replace(/_/g, '/');
       while (b64.length % 4 !== 0) b64 += '=';
       var json = atob(b64);
@@ -461,6 +490,10 @@
   var ctx = canvas.getContext('2d');
   var wrap = document.getElementById('canvas-wrap');
   var hint = document.getElementById('canvas-hint');
+  var submitBtn = document.getElementById('btn-submit');
+  var clearBtn = document.getElementById('btn-clear');
+  var signerInput = document.getElementById('signer-name');
+  var approvalCard = document.getElementById('approval-card');
   var drawing = false;
   var hasDrawn = false;
 
@@ -531,15 +564,30 @@
   canvas.addEventListener('touchcancel', endDraw);
 
   /* Clear */
-  document.getElementById('btn-clear').addEventListener('click', function() {
+  clearBtn.addEventListener('click', function() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     hasDrawn = false;
     hint.style.display = '';
   });
 
+  /* Freeze the form after successful submission */
+  function freezeForm() {
+    approvalCard.classList.add('frozen');
+    signerInput.readOnly = true;
+    canvas.removeEventListener('mousedown', startDraw);
+    canvas.removeEventListener('mousemove', moveDraw);
+    canvas.removeEventListener('mouseup', endDraw);
+    canvas.removeEventListener('mouseleave', endDraw);
+    canvas.removeEventListener('touchstart', startDraw);
+    canvas.removeEventListener('touchmove', moveDraw);
+    canvas.removeEventListener('touchend', endDraw);
+    canvas.removeEventListener('touchcancel', endDraw);
+    submitBtn.disabled = true;
+  }
+
   /* Submit */
-  document.getElementById('btn-submit').addEventListener('click', function() {
-    var name = document.getElementById('signer-name').value.trim();
+  submitBtn.addEventListener('click', async function() {
+    var name = signerInput.value.trim();
     if (!name) {
       alert('Please enter the authorized signer name.');
       return;
@@ -549,21 +597,46 @@
       return;
     }
 
+    /* Disable button and show sending state */
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'SENDING...';
+
     var customerName = wo.customerName || 'Unknown';
     var docId = wo.id || 'N/A';
     var timestamp = new Date().toLocaleString();
 
-    var subject = encodeURIComponent('Signature Received - ' + customerName + ' - ' + docId);
-    var body = encodeURIComponent(
-      'Customer ' + name + ' has signed document ' + docId + ' on ' + timestamp + '.'
-    );
+    var data = {
+      name: name,
+      date: new Date().toISOString().split('T')[0],
+      signature: canvas.toDataURL('image/png'),
+      customerName: customerName,
+      documentId: docId,
+      documentStatus: wo.status || 'ESTIMATE',
+      timestamp: timestamp
+    };
 
-    var mailto = 'mailto:dallas@upkeeputah.com?subject=' + subject + '&body=' + body;
-    window.location.href = mailto;
+    try {
+      var params = new URLSearchParams();
+      for (var key in data) {
+        params.append(key, data[key]);
+      }
 
-    /* Replace approval card with thank-you */
-    var card = document.getElementById('approval-card');
-    card.innerHTML = '<div class="thank-you">Thank you! Your signature has been submitted.</div>';
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: params
+      });
+
+      /* Freeze form and show thank-you */
+      freezeForm();
+      approvalCard.innerHTML = '<div class="thank-you">&#10003; Thank you! Your signature has been submitted successfully.</div>';
+
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('Submission error. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Submit Signature';
+    }
   });
 
 })();
