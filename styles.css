@@ -268,12 +268,12 @@ body {
   border-color: var(--accent);
 }
 
-/* Orange price — draws the eye to the money */
+/* Regular prices — navy brand color */
 .li-price {
   font-family: var(--font-display);
   font-size: 21px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--brand);
   white-space: nowrap;
   flex-shrink: 0;
   margin-right: 48px;
@@ -310,6 +310,33 @@ body {
 
 .line-item:hover .sub-tasks li::before {
   background: var(--accent);
+}
+
+/* ══════════════════════════════════════
+   ADJUSTMENT / DISCOUNT LINE ITEM
+   ══════════════════════════════════════ */
+.line-item.adjustment {
+  border-bottom: none;
+  border-top: 2px dashed var(--border);
+  margin-top: 4px;
+}
+
+.line-item.adjustment .li-title {
+  color: var(--accent);
+  border-bottom-color: transparent;
+  font-style: normal;
+}
+
+.line-item.adjustment .li-price {
+  color: var(--accent);
+}
+
+.line-item.adjustment .li-desc {
+  font-size: 14px;
+  color: var(--ink-muted);
+  font-style: italic;
+  margin-top: 4px;
+  line-height: 1.5;
 }
 
 /* ══════════════════════════════════════
