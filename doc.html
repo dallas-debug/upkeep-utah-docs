@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Upkeep Utah</title>
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -76,7 +79,6 @@
     subtotal += parseFloat(items[i].price) || 0;
   }
 
-  /* Discount / adjustment */
   var discount = parseFloat(wo.discount) || 0;
   var total = subtotal - discount;
   if (total < 0) total = 0;
@@ -84,7 +86,7 @@
   /* ── Build HTML ── */
   var html = '';
 
-  /* Header */
+  /* Header — full bleed, no border */
   html += '<div class="header">';
   html += '<img src="https://dallas-debug.github.io/upkeep-utah-docs/UPKEEPLOGO3.webp" class="header-logo" alt="Upkeep Utah Logo">';
   html += '<div class="header-info">';
@@ -139,7 +141,7 @@
       html += '</div>';
     }
 
-    /* Adjustment / discount line (only if discount > 0) */
+    /* Adjustment / discount line */
     if (discount > 0) {
       html += '<div class="line-item adjustment">';
       html += '<div class="li-header">';
@@ -185,7 +187,7 @@
     if (wo.signatureBase64) {
       html += '<div class="section">';
       html += '<div class="section-label">Customer Approval</div>';
-      html += '<img src="' + esc(wo.signatureBase64) + '" style="max-width:100%;border:1px solid #ddd;border-radius:6px;" alt="Customer signature">';
+      html += '<img src="' + esc(wo.signatureBase64) + '" class="sig-preview" alt="Customer signature">';
       html += '</div>';
     }
 
@@ -193,7 +195,7 @@
     html += '<div class="approval" id="approval-card">';
     html += '<h3>Customer Approval</h3>';
     html += '<label for="signer-name">Authorized Signer Name</label>';
-    html += '<input type="text" id="signer-name" placeholder="Full name">';
+    html += '<input type="text" id="signer-name" placeholder="Full name" autocomplete="name">';
     html += '<label>Date</label>';
     html += '<div class="date-display" id="sig-date">' + todayString() + '</div>';
     html += '<label>Signature</label>';
@@ -202,8 +204,8 @@
     html += '<span class="canvas-hint" id="canvas-hint">Sign here</span>';
     html += '</div>';
     html += '<div class="btn-row">';
-    html += '<button class="btn-clear" id="btn-clear">Clear Signature</button>';
-    html += '<button class="btn-submit" id="btn-submit">Submit Signature</button>';
+    html += '<button class="btn-clear" id="btn-clear" type="button">Clear Signature</button>';
+    html += '<button class="btn-submit" id="btn-submit" type="button">Submit Signature</button>';
     html += '</div>';
     html += '</div>';
   }
@@ -234,8 +236,11 @@
 
   function resizeCanvas() {
     var rect = wrap.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = 300;
+    var w = rect.width;
+    /* Responsive height: ~40% of width on phones, capped for desktop */
+    var h = Math.min(Math.round(w * 0.4), 220);
+    canvas.width = w;
+    canvas.height = h;
     ctx.strokeStyle = '#1A3646';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
@@ -286,26 +291,22 @@
     drawing = false;
   }
 
-  /* Mouse events */
   canvas.addEventListener('mousedown', startDraw);
   canvas.addEventListener('mousemove', moveDraw);
   canvas.addEventListener('mouseup', endDraw);
   canvas.addEventListener('mouseleave', endDraw);
 
-  /* Touch events */
   canvas.addEventListener('touchstart', startDraw, { passive: false });
   canvas.addEventListener('touchmove', moveDraw, { passive: false });
   canvas.addEventListener('touchend', endDraw);
   canvas.addEventListener('touchcancel', endDraw);
 
-  /* Clear */
   clearBtn.addEventListener('click', function() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     hasDrawn = false;
     hint.style.display = '';
   });
 
-  /* Freeze the form after successful submission */
   function freezeForm() {
     approvalCard.classList.add('frozen');
     signerInput.readOnly = true;
@@ -320,7 +321,6 @@
     submitBtn.disabled = true;
   }
 
-  /* Submit */
   submitBtn.addEventListener('click', async function() {
     var name = signerInput.value.trim();
     if (!name) {
@@ -332,7 +332,6 @@
       return;
     }
 
-    /* Disable button and show sending state */
     submitBtn.disabled = true;
     submitBtn.innerText = 'SENDING...';
 
@@ -362,7 +361,6 @@
         body: params
       });
 
-      /* Freeze form and show thank-you */
       freezeForm();
       approvalCard.innerHTML = '<div class="thank-you">&#10003; Thank you! Your signature has been submitted successfully.</div>';
 
@@ -373,7 +371,7 @@
       submitBtn.innerText = 'Submit Signature';
     }
   });
-  } /* end ESTIMATE-only signature logic */
+  }
 
 })();
 </script>
