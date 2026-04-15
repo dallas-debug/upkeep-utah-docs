@@ -71,10 +71,15 @@
 
   /* ── Calculate total ── */
   var items = wo.lineItems || [];
-  var total = 0;
+  var subtotal = 0;
   for (var i = 0; i < items.length; i++) {
-    total += parseFloat(items[i].price) || 0;
+    subtotal += parseFloat(items[i].price) || 0;
   }
+
+  /* Discount / adjustment */
+  var discount = parseFloat(wo.discount) || 0;
+  var total = subtotal - discount;
+  if (total < 0) total = 0;
 
   /* ── Build HTML ── */
   var html = '';
@@ -133,6 +138,20 @@
       }
       html += '</div>';
     }
+
+    /* Adjustment / discount line (only if discount > 0) */
+    if (discount > 0) {
+      html += '<div class="line-item adjustment">';
+      html += '<div class="li-header">';
+      html += '<span class="li-title">Adjustment</span>';
+      html += '<span class="li-price">\u2212' + currency(discount) + '</span>';
+      html += '</div>';
+      if (wo.discountDescription && wo.discountDescription.trim()) {
+        html += '<div class="li-desc">' + esc(wo.discountDescription) + '</div>';
+      }
+      html += '</div>';
+    }
+
     html += '</div>';
   }
 
