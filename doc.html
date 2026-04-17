@@ -81,25 +81,30 @@
   /* ── Set dynamic page title ── */
   document.title = 'Upkeep Utah \u2014 ' + statusLabel(wo.status);
 
-  /* ── Calculate total ── */
-  var items = wo.lineItems || [];
-  var subtotal = 0;
-  for (var i = 0; i < items.length; i++) {
-    subtotal += parseFloat(items[i].price) || 0;
-  }
-
-  var discount = parseFloat(wo.discount) || 0;
-  var total = subtotal - discount;
-  if (total < 0) total = 0;
-
-  /* ── Determine document status (gates estimate-only features) ── */
+  /* ── Determine document status ── */
   var st = (wo.status || '').toUpperCase();
   var isEstimate = (st === 'ESTIMATE' || st === '');
+  var isOptionsMode = !!(wo.optionsMode);
+
+  /* ── Calculate total ── */
+  var items = wo.lineItems || [];
+  var discount = parseFloat(wo.discount) || 0;
+
+  /* In options mode, total is calculated from the selected option only.
+     In normal mode, total is the sum of all items minus discount. */
+  function calcNormalTotal() {
+    var subtotal = 0;
+    for (var i = 0; i < items.length; i++) {
+      subtotal += parseFloat(items[i].price) || 0;
+    }
+    var t = subtotal - discount;
+    return t < 0 ? 0 : t;
+  }
 
   /* ── Build HTML ── */
   var html = '';
 
-  /* Header — full bleed, no border */
+  /* Header */
   html += '<div class="header">';
   html += '<img src="https://dallas-debug.github.io/upkeep-utah-docs/UPKEEPLOGO3.webp" class="header-logo" alt="Upkeep Utah Logo">';
   html += '<div class="header-info">';
@@ -124,7 +129,7 @@
   if (wo.customerEmail)   html += '<p>' + esc(wo.customerEmail) + '</p>';
   html += '</div>';
 
-  /* Schedule — only shown if a date was selected (not skipped) */
+  /* Schedule */
   var scheduledDateString = formatTimestamp(wo.scheduledDate);
   if (scheduledDateString) {
     html += '<div class="section">';
@@ -137,36 +142,61 @@
   if (items.length > 0) {
     html += '<div class="section">';
     html += '<div class="section-label">Scope of Work</div>';
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i];
-      html += '<div class="line-item">';
-      html += '<div class="li-header">';
-      html += '<span class="li-title">' + esc(it.title) + '</span>';
-      html += '<span class="li-price">' + currency(it.price) + '</span>';
-      html += '</div>';
-      var subs = it.subTasks || [];
-      if (subs.length > 0) {
-        html += '<ul class="sub-tasks">';
-        for (var j = 0; j < subs.length; j++) {
-          html += '<li>' + esc(subs[j]) + '</li>';
-        }
-        html += '</ul>';
-      }
-      html += '</div>';
-    }
 
-    /* Adjustment / discount line — contractor names this row */
-    if (discount > 0) {
-      var discLabel = wo.discountLabel || 'Adjustment';
-      html += '<div class="line-item adjustment">';
-      html += '<div class="li-header">';
-      html += '<span class="li-title">' + esc(discLabel) + '</span>';
-      html += '<span class="li-price">\u2212' + currency(discount) + '</span>';
-      html += '</div>';
-      if (wo.discountDescription && wo.discountDescription.trim()) {
-        html += '<div class="li-desc">' + esc(wo.discountDescription) + '</div>';
+    if (isOptionsMode) {
+      /* OPTIONS MODE — render each item as a selectable option card */
+      html += '<p class="options-instruction">Please select one option below before signing.</p>';
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        var itemId = esc(it.id || ('option-' + i));
+        html += '<div class="line-item option-item" id="option-' + itemId + '" data-item-id="' + itemId + '" data-price="' + (parseFloat(it.price) || 0) + '">';
+        html += '<div class="li-header">';
+        html += '<span class="li-title">' + esc(it.title) + '</span>';
+        html += '<span class="li-price">' + currency(it.price) + '</span>';
+        html += '</div>';
+        var subs = it.subTasks || [];
+        if (subs.length > 0) {
+          html += '<ul class="sub-tasks">';
+          for (var j = 0; j < subs.length; j++) {
+            html += '<li>' + esc(subs[j]) + '</li>';
+          }
+          html += '</ul>';
+        }
+        html += '</div>';
       }
-      html += '</div>';
+    } else {
+      /* NORMAL MODE — render items as before */
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        html += '<div class="line-item">';
+        html += '<div class="li-header">';
+        html += '<span class="li-title">' + esc(it.title) + '</span>';
+        html += '<span class="li-price">' + currency(it.price) + '</span>';
+        html += '</div>';
+        var subs = it.subTasks || [];
+        if (subs.length > 0) {
+          html += '<ul class="sub-tasks">';
+          for (var j = 0; j < subs.length; j++) {
+            html += '<li>' + esc(subs[j]) + '</li>';
+          }
+          html += '</ul>';
+        }
+        html += '</div>';
+      }
+
+      /* Discount row — normal mode only */
+      if (discount > 0) {
+        var discLabel = wo.discountLabel || 'Adjustment';
+        html += '<div class="line-item adjustment">';
+        html += '<div class="li-header">';
+        html += '<span class="li-title">' + esc(discLabel) + '</span>';
+        html += '<span class="li-price">\u2212' + currency(discount) + '</span>';
+        html += '</div>';
+        if (wo.discountDescription && wo.discountDescription.trim()) {
+          html += '<div class="li-desc">' + esc(wo.discountDescription) + '</div>';
+        }
+        html += '</div>';
+      }
     }
 
     html += '</div>';
@@ -202,8 +232,8 @@
     html += '</div>';
   }
 
-  /* Psych price anchor — directly above total bar, ESTIMATE only */
-  if (isEstimate && wo.avgCost) {
+  /* Psych price anchor — ESTIMATE only, normal mode only */
+  if (isEstimate && !isOptionsMode && wo.avgCost) {
     var avgLabel = wo.avgCostLabel || 'Average Cost';
     var avgAmount = currency(wo.avgCost);
     html += '<div class="psych-price-bar">';
@@ -219,11 +249,18 @@
     html += '</div>';
   }
 
-  /* Total bar */
-  html += '<div class="total-bar">';
-  html += '<span>TOTAL</span>';
-  html += '<span>' + currency(total) + '</span>';
-  html += '</div>';
+  /* Total bar — hidden in options mode until customer selects an option */
+  if (isOptionsMode) {
+    html += '<div class="total-bar" id="total-bar" style="display:none;">';
+    html += '<span>TOTAL</span>';
+    html += '<span id="options-total">$0.00</span>';
+    html += '</div>';
+  } else {
+    html += '<div class="total-bar">';
+    html += '<span>TOTAL</span>';
+    html += '<span>' + currency(calcNormalTotal()) + '</span>';
+    html += '</div>';
+  }
 
   /* Guarantee */
   html += '<div class="guarantee">Never surprise charges, guaranteed.</div>';
@@ -238,7 +275,6 @@
   /* Signature section — ESTIMATE only */
   if (isEstimate) {
 
-    /* Show previously captured signature if present */
     if (wo.signatureBase64) {
       html += '<div class="section">';
       html += '<div class="section-label">Customer Approval</div>';
@@ -246,11 +282,9 @@
       html += '</div>';
     }
 
-    /* Approval section — full-width, no card */
     html += '<div class="section approval-section" id="approval-card">';
     html += '<div class="section-label">Customer Approval</div>';
 
-    /* Budget alignment — above signature fields, inside approval section */
     if (wo.budgetAlignment) {
       html += '<div class="budget-wrap" id="budget-wrap">';
       html += '<button class="budget-btn" id="budget-btn" type="button">Request Budget Alignment</button>';
@@ -260,7 +294,6 @@
       html += '</div>';
       html += '</div>';
 
-      /* Budget alignment modal */
       html += '<div class="budget-modal-overlay" id="budget-modal-overlay">';
       html += '<div class="budget-modal">';
       html += '<div class="budget-modal-header">';
@@ -311,6 +344,42 @@
   html += '</div>';
 
   page.innerHTML = html;
+
+  /* ── Options mode interaction logic ── */
+  if (isOptionsMode) {
+    var selectedOptionId = null;
+    var totalBar = document.getElementById('total-bar');
+    var optionsTotal = document.getElementById('options-total');
+    var optionItems = document.querySelectorAll('.option-item');
+
+    optionItems.forEach(function(el) {
+      el.addEventListener('click', function() {
+        var clickedId = this.getAttribute('data-item-id');
+        var clickedPrice = parseFloat(this.getAttribute('data-price')) || 0;
+
+        /* Deselect all */
+        optionItems.forEach(function(item) {
+          item.classList.remove('option-selected');
+        });
+
+        if (selectedOptionId === clickedId) {
+          /* Tapping the already-selected option deselects it */
+          selectedOptionId = null;
+          totalBar.style.display = 'none';
+        } else {
+          /* Select this option */
+          selectedOptionId = clickedId;
+          this.classList.add('option-selected');
+
+          /* Calculate total: selected option price minus discount */
+          var t = clickedPrice - discount;
+          if (t < 0) t = 0;
+          optionsTotal.textContent = currency(t);
+          totalBar.style.display = '';
+        }
+      }.bind(el));
+    });
+  }
 
   /* ── Signature canvas logic (ESTIMATE only) ── */
   if (isEstimate) {
@@ -429,11 +498,20 @@
     var docId = wo.id || 'N/A';
     var timestamp = new Date().toLocaleString();
 
-    /* Gather budget alignment data if submitted */
     var budgetAmountEl = document.getElementById('budget-amount');
     var budgetNotesEl = document.getElementById('budget-notes');
     var budgetAmount = budgetAmountEl ? budgetAmountEl.value : '';
     var budgetNotes = budgetNotesEl ? budgetNotesEl.value : '';
+
+    /* Capture selected option title if in options mode */
+    var selectedOptionTitle = '';
+    if (isOptionsMode) {
+      var selectedEl = document.querySelector('.option-item.option-selected');
+      if (selectedEl) {
+        var titleEl = selectedEl.querySelector('.li-title');
+        selectedOptionTitle = titleEl ? titleEl.textContent : '';
+      }
+    }
 
     var data = {
       name: name,
@@ -444,7 +522,8 @@
       documentStatus: wo.status || 'ESTIMATE',
       timestamp: timestamp,
       budgetAlignmentAmount: budgetAmount,
-      budgetAlignmentNotes: budgetNotes
+      budgetAlignmentNotes: budgetNotes,
+      selectedOption: selectedOptionTitle
     };
 
     try {
@@ -461,7 +540,6 @@
 
       freezeForm();
 
-      /* Also freeze budget alignment button if it exists */
       var budgetBtn = document.getElementById('budget-btn');
       if (budgetBtn) {
         budgetBtn.disabled = true;
