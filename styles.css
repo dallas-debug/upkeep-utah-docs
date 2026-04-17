@@ -222,25 +222,27 @@ body {
   display: flex;
   justify-content: flex-end;
   align-items: baseline;
-  gap: 8px;
-  padding: var(--space-sm) var(--space-md);
+  gap: 10px;
+  padding: var(--space-lg) var(--space-md) var(--space-sm);
   margin-top: var(--space-md);
   position: relative;
 }
 
 .psych-label {
-  font-size: 14px;
+  font-family: var(--font-body);
+  font-size: 16px;
   font-weight: 500;
   color: var(--ink-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .psych-amount {
   font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ink-muted);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 /* Superscript source button */
@@ -493,7 +495,7 @@ body {
   justify-content: flex-end;
   align-items: baseline;
   gap: 16px;
-  margin-top: var(--space-md);
+  margin-top: 0;
   position: relative;
   overflow: hidden;
 }
@@ -1298,20 +1300,20 @@ body {
   }
 
   .psych-price-bar {
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--space-lg) var(--space-lg) var(--space-sm);
   }
 
   .psych-label {
-    font-size: 15px;
+    font-size: 18px;
   }
 
   .psych-amount {
-    font-size: 18px;
+    font-size: 32px;
   }
 
   .total-bar {
     padding: var(--space-lg) var(--space-xl);
-    margin: var(--space-lg) var(--space-lg) 0;
+    margin: 0 var(--space-lg) 0;
     border-radius: var(--radius-md);
   }
 
