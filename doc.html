@@ -83,6 +83,10 @@
   var total = subtotal - discount;
   if (total < 0) total = 0;
 
+  /* ── Determine document status (gates estimate-only features) ── */
+  var st = (wo.status || '').toUpperCase();
+  var isEstimate = (st === 'ESTIMATE' || st === '');
+
   /* ── Build HTML ── */
   var html = '';
 
@@ -105,7 +109,36 @@
   /* Customer info */
   html += '<div class="section">';
   html += '<div class="section-label">Customer</div>';
-  if (wo.customerName)    html += '<p><strong>' + esc(wo.customerName) + '</strong></p>';
+
+  /* Customer name row — may include psych price anchor on ESTIMATE only */
+  if (wo.customerName || (isEstimate && wo.avgCost)) {
+    html += '<div class="customer-row">';
+    if (wo.customerName) {
+      html += '<p class="customer-name"><strong>' + esc(wo.customerName) + '</strong></p>';
+    } else {
+      html += '<p class="customer-name"></p>';
+    }
+
+    /* Psych price anchor — ESTIMATE only, only if contractor provided avgCost */
+    if (isEstimate && wo.avgCost) {
+      var avgLabel = wo.avgCostLabel || 'Average Cost';
+      var avgAmount = currency(wo.avgCost);
+      html += '<div class="psych-price">';
+      html += '<span class="psych-label">' + esc(avgLabel) + ':</span> ';
+      html += '<span class="psych-amount">' + avgAmount + '</span>';
+      if (wo.avgCostSource) {
+        html += '<button class="psych-source-btn" type="button" ';
+        html += 'data-source="' + esc(wo.avgCostSource) + '" ';
+        html += 'aria-label="View source">';
+        html += '<sup>1</sup>';
+        html += '</button>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+  }
+
   if (wo.customerAddress) html += '<p>' + esc(wo.customerAddress) + '</p>';
   if (wo.customerPhone)   html += '<p>' + esc(wo.customerPhone) + '</p>';
   if (wo.customerEmail)   html += '<p>' + esc(wo.customerEmail) + '</p>';
@@ -141,11 +174,12 @@
       html += '</div>';
     }
 
-    /* Adjustment / discount line */
+    /* Adjustment / discount line — contractor names this row */
     if (discount > 0) {
+      var discLabel = wo.discountLabel || 'Adjustment';
       html += '<div class="line-item adjustment">';
       html += '<div class="li-header">';
-      html += '<span class="li-title">Adjustment</span>';
+      html += '<span class="li-title">' + esc(discLabel) + '</span>';
       html += '<span class="li-price">\u2212' + currency(discount) + '</span>';
       html += '</div>';
       if (wo.discountDescription && wo.discountDescription.trim()) {
@@ -165,17 +199,68 @@
     html += '</div>';
   }
 
+  /* Context anchors — ESTIMATE only */
+  var anchors = wo.contextAnchors || [];
+  var anchorFreeText = (wo.contextFreeText || '').trim();
+  if (isEstimate && (anchors.length > 0 || anchorFreeText)) {
+    html += '<div class="context-anchors">';
+    html += '<ul class="anchor-list">';
+    for (var i = 0; i < anchors.length; i++) {
+      html += '<li class="anchor-item">';
+      html += '<span class="anchor-check" aria-hidden="true">&#10003;</span>';
+      html += '<span>' + esc(anchors[i]) + '</span>';
+      html += '</li>';
+    }
+    if (anchorFreeText) {
+      html += '<li class="anchor-item">';
+      html += '<span class="anchor-check" aria-hidden="true">&#10003;</span>';
+      html += '<span>' + esc(anchorFreeText) + '</span>';
+      html += '</li>';
+    }
+    html += '</ul>';
+    html += '</div>';
+  }
+
   /* Total bar */
   html += '<div class="total-bar">';
   html += '<span>TOTAL</span>';
   html += '<span>' + currency(total) + '</span>';
   html += '</div>';
 
+  /* Budget alignment — ESTIMATE only, contractor must enable */
+  if (isEstimate && wo.budgetAlignment) {
+    html += '<div class="budget-wrap" id="budget-wrap">';
+    html += '<button class="budget-btn" id="budget-btn" type="button">Request Budget Alignment</button>';
+    html += '<div class="budget-pending" id="budget-pending" style="display:none;">';
+    html += '<span class="budget-pending-amount" id="budget-pending-amount"></span>';
+    html += '<span class="budget-pending-label">\u2014 pending approval</span>';
+    html += '</div>';
+    html += '</div>';
+
+    /* Budget alignment modal */
+    html += '<div class="budget-modal-overlay" id="budget-modal-overlay">';
+    html += '<div class="budget-modal">';
+    html += '<div class="budget-modal-header">';
+    html += '<h4>Budget Alignment</h4>';
+    html += '<button class="budget-modal-close" id="budget-modal-close" type="button" aria-label="Close">&times;</button>';
+    html += '</div>';
+    html += '<p class="budget-modal-desc">Enter your desired budget and let us know what changes you\'d like to make it work.</p>';
+    html += '<label class="budget-modal-label" for="budget-amount">Your Budget</label>';
+    html += '<div class="budget-input-wrap">';
+    html += '<span class="budget-input-prefix">$</span>';
+    html += '<input type="number" id="budget-amount" class="budget-input" placeholder="0.00" min="0" step="0.01" inputmode="decimal">';
+    html += '</div>';
+    html += '<label class="budget-modal-label" for="budget-notes">Changes or Notes <span class="budget-optional">(optional)</span></label>';
+    html += '<textarea id="budget-notes" class="budget-textarea" rows="3" placeholder="What changes would help reach this budget?"></textarea>';
+    html += '<button class="budget-modal-submit" id="budget-modal-submit" type="button">Submit</button>';
+    html += '</div>';
+    html += '</div>';
+  }
+
   /* Guarantee */
   html += '<div class="guarantee">Never surprise charges, guaranteed.</div>';
 
   /* Pay Now (INVOICE only) */
-  var st = (wo.status || '').toUpperCase();
   if (st === 'INVOICE') {
     html += '<div class="pay-now-wrap">';
     html += '<a class="pay-now-btn" href="https://pay.upkeeputah.com/placeholder">Pay Now</a>';
@@ -183,7 +268,7 @@
   }
 
   /* Signature (if already captured) — ESTIMATE only */
-  if (st === 'ESTIMATE' || st === '') {
+  if (isEstimate) {
     if (wo.signatureBase64) {
       html += '<div class="section">';
       html += '<div class="section-label">Customer Approval</div>';
@@ -191,18 +276,24 @@
       html += '</div>';
     }
 
-    /* Approval card */
-    html += '<div class="approval" id="approval-card">';
-    html += '<h3>Customer Approval</h3>';
-    html += '<label for="signer-name">Authorized Signer Name</label>';
-    html += '<input type="text" id="signer-name" placeholder="Full name" autocomplete="name">';
-    html += '<label>Date</label>';
-    html += '<div class="date-display" id="sig-date">' + todayString() + '</div>';
-    html += '<label>Signature</label>';
+    /* Approval section — full-width, no card */
+    html += '<div class="section approval-section" id="approval-card">';
+    html += '<div class="section-label">Customer Approval</div>';
+
+    html += '<label class="approval-label" for="signer-name">Full name</label>';
+    html += '<span class="approval-helper">Authorized signer</span>';
+    html += '<input type="text" id="signer-name" class="approval-input" placeholder="Enter your full name" autocomplete="name">';
+
+    html += '<label class="approval-label">Date</label>';
+    html += '<div class="approval-date" id="sig-date">' + todayString() + '</div>';
+
+    html += '<label class="approval-label">Signature</label>';
     html += '<div class="canvas-wrap" id="canvas-wrap">';
     html += '<canvas id="sig-canvas"></canvas>';
+    html += '<div class="canvas-sig-line"></div>';
     html += '<span class="canvas-hint" id="canvas-hint">Sign here</span>';
     html += '</div>';
+
     html += '<div class="btn-row">';
     html += '<button class="btn-clear" id="btn-clear" type="button">Clear Signature</button>';
     html += '<button class="btn-submit" id="btn-submit" type="button">Submit Signature</button>';
@@ -222,7 +313,7 @@
   page.innerHTML = html;
 
   /* ── Signature canvas logic (ESTIMATE only) ── */
-  if (st === 'ESTIMATE' || st === '') {
+  if (isEstimate) {
   var canvas = document.getElementById('sig-canvas');
   var ctx = canvas.getContext('2d');
   var wrap = document.getElementById('canvas-wrap');
@@ -339,6 +430,12 @@
     var docId = wo.id || 'N/A';
     var timestamp = new Date().toLocaleString();
 
+    /* Gather budget alignment data if submitted */
+    var budgetAmountEl = document.getElementById('budget-amount');
+    var budgetNotesEl = document.getElementById('budget-notes');
+    var budgetAmount = budgetAmountEl ? budgetAmountEl.value : '';
+    var budgetNotes = budgetNotesEl ? budgetNotesEl.value : '';
+
     var data = {
       name: name,
       date: new Date().toISOString().split('T')[0],
@@ -346,7 +443,9 @@
       customerName: customerName,
       documentId: docId,
       documentStatus: wo.status || 'ESTIMATE',
-      timestamp: timestamp
+      timestamp: timestamp,
+      budgetAlignmentAmount: budgetAmount,
+      budgetAlignmentNotes: budgetNotes
     };
 
     try {
@@ -362,6 +461,14 @@
       });
 
       freezeForm();
+
+      /* Also freeze budget alignment button if it exists */
+      var budgetBtn = document.getElementById('budget-btn');
+      if (budgetBtn) {
+        budgetBtn.disabled = true;
+        budgetBtn.classList.add('submitted');
+      }
+
       approvalCard.innerHTML = '<div class="thank-you">&#10003; Thank you! Your signature has been submitted successfully.</div>';
 
     } catch (error) {
@@ -371,6 +478,108 @@
       submitBtn.innerText = 'Submit Signature';
     }
   });
+  }
+
+  /* ── Budget alignment modal logic (ESTIMATE only) ── */
+  var budgetBtn = document.getElementById('budget-btn');
+  if (budgetBtn) {
+    var overlay = document.getElementById('budget-modal-overlay');
+    var closeBtn = document.getElementById('budget-modal-close');
+    var modalSubmit = document.getElementById('budget-modal-submit');
+    var amountInput = document.getElementById('budget-amount');
+    var notesInput = document.getElementById('budget-notes');
+    var pendingEl = document.getElementById('budget-pending');
+    var pendingAmountEl = document.getElementById('budget-pending-amount');
+    var budgetSubmitted = false;
+
+    function openBudgetModal() {
+      overlay.classList.add('open');
+      /* Focus the amount field after animation */
+      setTimeout(function() { amountInput.focus(); }, 200);
+    }
+
+    function closeBudgetModal() {
+      overlay.classList.remove('open');
+    }
+
+    /* Toggle: open modal on button click */
+    budgetBtn.addEventListener('click', function() {
+      openBudgetModal();
+    });
+
+    /* Close button */
+    closeBtn.addEventListener('click', closeBudgetModal);
+
+    /* Click overlay background to close */
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeBudgetModal();
+    });
+
+    /* Escape key to close */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) {
+        closeBudgetModal();
+      }
+    });
+
+    /* Submit budget alignment */
+    modalSubmit.addEventListener('click', function() {
+      var amount = parseFloat(amountInput.value);
+      if (!amount || amount <= 0) {
+        alert('Please enter your desired budget amount.');
+        return;
+      }
+
+      /* Close modal */
+      closeBudgetModal();
+
+      /* Update button to submitted state */
+      budgetSubmitted = true;
+      budgetBtn.classList.add('submitted');
+      budgetBtn.textContent = 'Budget Alignment Requested \u2713';
+
+      /* Show pending amount */
+      pendingAmountEl.textContent = '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      pendingEl.style.display = '';
+    });
+  }
+
+  /* ── Psych price source tooltip (ESTIMATE only) ── */
+  var psychSourceBtn = document.querySelector('.psych-source-btn');
+  if (psychSourceBtn) {
+    var tooltipTimeout = null;
+    psychSourceBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var sourceUrl = this.getAttribute('data-source');
+      if (!sourceUrl) return;
+
+      /* Remove any existing tooltip */
+      var existing = document.querySelector('.psych-tooltip');
+      if (existing) existing.remove();
+      if (tooltipTimeout) clearTimeout(tooltipTimeout);
+
+      /* Create and position tooltip */
+      var tooltip = document.createElement('div');
+      tooltip.className = 'psych-tooltip';
+      tooltip.textContent = sourceUrl;
+      this.parentNode.appendChild(tooltip);
+
+      /* Auto-dismiss after 4 seconds */
+      tooltipTimeout = setTimeout(function() {
+        tooltip.classList.add('fade-out');
+        setTimeout(function() { tooltip.remove(); }, 250);
+      }, 4000);
+    });
+
+    /* Tap anywhere else to dismiss early */
+    document.addEventListener('click', function() {
+      var tooltip = document.querySelector('.psych-tooltip');
+      if (tooltip) {
+        tooltip.classList.add('fade-out');
+        setTimeout(function() { tooltip.remove(); }, 250);
+        if (tooltipTimeout) clearTimeout(tooltipTimeout);
+      }
+    });
   }
 
 })();
