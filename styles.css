@@ -67,7 +67,6 @@
 
 /* ══════════════════════════════════════════════════════════════
    BASE STYLES — MOBILE (< 600px)
-   All sizes, paddings, and typography are set for phone screens.
    ══════════════════════════════════════════════════════════════ */
 
 body {
@@ -103,7 +102,7 @@ body {
 }
 
 /* ══════════════════════════════════════
-   HEADER — full-bleed, borderless
+   HEADER
    ══════════════════════════════════════ */
 .header {
   background: var(--brand-deep);
@@ -216,7 +215,21 @@ body {
 }
 
 /* ══════════════════════════════════════
-   PSYCH PRICE BAR — above total (ESTIMATE only)
+   OPTIONS MODE INSTRUCTION
+   ══════════════════════════════════════ */
+.options-instruction {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--accent-glow);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+
+/* ══════════════════════════════════════
+   PSYCH PRICE BAR
    ══════════════════════════════════════ */
 .psych-price-bar {
   display: flex;
@@ -245,7 +258,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Superscript source button */
 .psych-source-btn {
   border: none;
   background: transparent;
@@ -277,7 +289,6 @@ body {
   border-radius: 4px;
 }
 
-/* Tooltip that shows the source URL on tap */
 .psych-tooltip {
   position: absolute;
   top: calc(100% + 8px);
@@ -326,7 +337,6 @@ body {
 .line-item {
   padding: 16px var(--space-md);
   border-bottom: 1px solid var(--border-light);
-  transition: background 0.2s ease;
   margin-left: calc(-1 * var(--space-md));
   margin-right: calc(-1 * var(--space-md));
 }
@@ -335,7 +345,6 @@ body {
   border-bottom: none;
 }
 
-/* Background band on every priced row (title + price) */
 .li-header {
   display: flex;
   justify-content: space-between;
@@ -355,12 +364,10 @@ body {
   font-size: 16px;
   font-weight: 600;
   color: var(--ink);
-  text-decoration: none;
   flex: 1;
   min-width: 0;
   border-bottom: 2px solid var(--border);
   padding-bottom: 2px;
-  transition: border-color 0.2s ease;
 }
 
 .li-price {
@@ -398,11 +405,41 @@ body {
   height: 6px;
   border-radius: 1px;
   background: var(--border);
-  transition: background 0.2s ease;
 }
 
-.line-item:hover .sub-tasks li::before {
-  background: var(--accent);
+/* ══════════════════════════════════════
+   OPTIONS MODE — SELECTABLE OPTION ITEMS
+   ══════════════════════════════════════ */
+.option-item {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.option-item:hover {
+  border-color: var(--accent-glow);
+  background: rgba(194, 65, 15, 0.03);
+}
+
+.option-item.option-selected {
+  border-color: var(--accent);
+  background: rgba(194, 65, 15, 0.06);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.option-item.option-selected .li-header {
+  background: rgba(194, 65, 15, 0.08);
+}
+
+.option-item.option-selected .li-title {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.option-item.option-selected .li-price {
+  color: var(--accent);
 }
 
 /* ══════════════════════════════════════
@@ -433,7 +470,7 @@ body {
 }
 
 /* ══════════════════════════════════════
-   NOTES — no background card, just text
+   NOTES
    ══════════════════════════════════════ */
 .sig-preview {
   max-width: 100%;
@@ -451,7 +488,7 @@ body {
 }
 
 /* ══════════════════════════════════════
-   CONTEXT ANCHORS — value reinforcement band (ESTIMATE only)
+   CONTEXT ANCHORS
    ══════════════════════════════════════ */
 .context-anchors {
   background: var(--brand-tint);
@@ -528,14 +565,13 @@ body {
 }
 
 /* ══════════════════════════════════════
-   BUDGET ALIGNMENT (ESTIMATE only)
+   BUDGET ALIGNMENT
    ══════════════════════════════════════ */
 .budget-wrap {
   text-align: center;
   padding: var(--space-md) var(--space-md) 0;
 }
 
-/* Default state — outlined, secondary feel */
 .budget-btn {
   display: inline-block;
   font-family: var(--font-display);
@@ -562,7 +598,6 @@ body {
   background: var(--brand-wash);
 }
 
-/* Submitted state — filled dark */
 .budget-btn.submitted {
   background: var(--brand-mid);
   color: var(--surface);
@@ -579,7 +614,6 @@ body {
   cursor: not-allowed;
 }
 
-/* Pending amount display */
 .budget-pending {
   display: flex;
   justify-content: center;
@@ -603,7 +637,6 @@ body {
   font-style: italic;
 }
 
-/* ── Budget modal overlay ── */
 .budget-modal-overlay {
   position: fixed;
   inset: 0;
@@ -624,7 +657,6 @@ body {
   visibility: visible;
 }
 
-/* Modal panel — slides up from bottom on mobile */
 .budget-modal {
   background: var(--surface);
   width: 100%;
@@ -695,7 +727,6 @@ body {
   color: var(--ink-faint);
 }
 
-/* Dollar input with prefix */
 .budget-input-wrap {
   display: flex;
   align-items: center;
@@ -859,7 +890,7 @@ body {
 }
 
 /* ══════════════════════════════════════
-   APPROVAL SECTION — full-width, no card
+   APPROVAL SECTION
    ══════════════════════════════════════ */
 .approval-section {
   padding-top: var(--space-xl);
@@ -945,7 +976,6 @@ body {
   cursor: crosshair;
 }
 
-/* Signature line — faint horizontal rule near bottom of canvas */
 .canvas-sig-line {
   position: absolute;
   bottom: 28px;
@@ -956,7 +986,6 @@ body {
   pointer-events: none;
 }
 
-/* Hint text — bottom-right, out of the way */
 .canvas-hint {
   position: absolute;
   bottom: 10px;
@@ -976,7 +1005,6 @@ body {
   margin-top: var(--space-sm);
 }
 
-/* Clear — ghost/outlined button, proper tap target */
 .btn-clear {
   width: 100%;
   padding: 14px 16px;
@@ -1002,7 +1030,6 @@ body {
   background: var(--brand-tint);
 }
 
-/* Submit — orange accent, primary action */
 .btn-submit {
   width: 100%;
   padding: 16px;
@@ -1053,7 +1080,7 @@ body {
   transform: translateY(0);
 }
 
-/* ── Frozen State (post-submission) ── */
+/* ── Frozen State ── */
 .approval-section.frozen .approval-input {
   background-color: var(--brand-tint);
   color: var(--ink-muted);
@@ -1071,10 +1098,7 @@ body {
   pointer-events: none;
 }
 
-.approval-section.frozen .canvas-sig-line {
-  display: none;
-}
-
+.approval-section.frozen .canvas-sig-line { display: none; }
 .approval-section.frozen .canvas-hint { display: none; }
 .approval-section.frozen .btn-clear { display: none; }
 .approval-section.frozen .btn-submit { display: none; }
@@ -1185,8 +1209,6 @@ body {
 
 /* ══════════════════════════════════════════════════════════════
    DESKTOP ENHANCEMENTS — min-width: 600px
-   Adds: larger spacing, bigger headings, hover effects,
-   page shadow, wider logo, quote mark on guarantee.
    ══════════════════════════════════════════════════════════════ */
 @media (min-width: 600px) {
   .page {
@@ -1208,39 +1230,23 @@ body {
     transform: scale(1.05);
   }
 
-  .header h1 {
-    font-size: 18px;
-  }
-
-  .header p {
-    font-size: 15px;
-  }
+  .header h1 { font-size: 18px; }
+  .header p { font-size: 15px; }
 
   .doc-type {
     padding: var(--space-2xl) var(--space-lg) var(--space-md);
   }
 
-  .doc-type h2 {
-    font-size: 44px;
-  }
+  .doc-type h2 { font-size: 44px; }
 
   .doc-type .updated {
     font-size: 16px;
     margin-top: 12px;
   }
 
-  .section {
-    padding: var(--space-lg) var(--space-lg);
-  }
-
-  .section-label {
-    font-size: 22px;
-    margin-bottom: 10px;
-  }
-
-  .section p {
-    font-size: 17px;
-  }
+  .section { padding: var(--space-lg) var(--space-lg); }
+  .section-label { font-size: 22px; margin-bottom: 10px; }
+  .section p { font-size: 17px; }
 
   .line-item {
     padding: 18px var(--space-lg);
@@ -1256,60 +1262,25 @@ body {
     padding-right: var(--space-lg);
   }
 
-  .li-title {
-    font-size: 17px;
-  }
+  .li-title { font-size: 17px; }
+  .li-price { font-size: 21px; margin-right: 48px; }
 
-  .line-item:hover .li-title {
-    border-color: var(--accent);
-  }
+  .sub-tasks { margin: 10px 0 0 20px; }
+  .sub-tasks li { font-size: 16px; padding-left: 18px; }
+  .sub-tasks li::before { width: 7px; height: 7px; }
 
-  .li-price {
-    font-size: 21px;
-    margin-right: 48px;
-  }
+  .line-item.adjustment .li-desc { font-size: 15px; }
+  .notes-text { font-size: 17px; }
 
-  .sub-tasks {
-    margin: 10px 0 0 20px;
-  }
-
-  .sub-tasks li {
-    font-size: 16px;
-    padding-left: 18px;
-  }
-
-  .sub-tasks li::before {
-    width: 7px;
-    height: 7px;
-  }
-
-  .line-item.adjustment .li-desc {
-    font-size: 15px;
-  }
-
-  .notes-text {
-    font-size: 17px;
-  }
-
-  .context-anchors {
-    padding: var(--space-lg) var(--space-lg);
-  }
-
-  .anchor-item {
-    font-size: 15px;
-  }
+  .context-anchors { padding: var(--space-lg) var(--space-lg); }
+  .anchor-item { font-size: 15px; }
 
   .psych-price-bar {
     padding: var(--space-lg) var(--space-lg) var(--space-sm);
   }
 
-  .psych-label {
-    font-size: 18px;
-  }
-
-  .psych-amount {
-    font-size: 32px;
-  }
+  .psych-label { font-size: 18px; }
+  .psych-amount { font-size: 32px; }
 
   .total-bar {
     padding: var(--space-lg) var(--space-xl);
@@ -1317,14 +1288,8 @@ body {
     border-radius: var(--radius-md);
   }
 
-  .total-bar span:first-child {
-    font-size: 22px;
-    letter-spacing: 3px;
-  }
-
-  .total-bar span:last-child {
-    font-size: 34px;
-  }
+  .total-bar span:first-child { font-size: 22px; letter-spacing: 3px; }
+  .total-bar span:last-child { font-size: 34px; }
 
   .guarantee {
     padding: var(--space-xl) var(--space-xl);
@@ -1332,10 +1297,7 @@ body {
     position: relative;
   }
 
-  /* Desktop: modal centers on screen instead of sliding from bottom */
-  .budget-modal-overlay {
-    align-items: center;
-  }
+  .budget-modal-overlay { align-items: center; }
 
   .budget-modal {
     border-radius: var(--radius-lg);
@@ -1360,32 +1322,15 @@ body {
     line-height: 1;
   }
 
-  .pay-now-btn {
-    padding: 18px 64px;
-  }
+  .pay-now-btn { padding: 18px 64px; }
 
-  /* Desktop: signature canvas gets slightly taller */
-  .canvas-wrap canvas {
-    aspect-ratio: 3 / 1;
-  }
+  .canvas-wrap canvas { aspect-ratio: 3 / 1; }
+  .canvas-sig-line { left: var(--space-xl); right: var(--space-xl); }
 
-  .canvas-sig-line {
-    left: var(--space-xl);
-    right: var(--space-xl);
-  }
-
-  .footer {
-    padding: var(--space-2xl) var(--space-lg) var(--space-xl);
-  }
-
-  .footer .contact-line {
-    font-size: 15px;
-  }
-
+  .footer { padding: var(--space-2xl) var(--space-lg) var(--space-xl); }
+  .footer .contact-line { font-size: 15px; }
   .footer .legal-line,
-  .footer .company-line {
-    font-size: 13px;
-  }
+  .footer .company-line { font-size: 13px; }
 }
 
 /* ══════════════════════════════════════
@@ -1404,7 +1349,6 @@ body {
   .total-bar { break-inside: avoid; }
   .btn-row { display: none; }
   .budget-wrap { display: none; }
-  .li-header {
-    background: #F5F5F5 !important;
-  }
+  .option-item { cursor: default; border-color: var(--border-light) !important; }
+  .li-header { background: #F5F5F5 !important; }
 }
