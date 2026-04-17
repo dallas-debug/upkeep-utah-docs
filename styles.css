@@ -216,44 +216,20 @@ body {
 }
 
 /* ══════════════════════════════════════
-   PSYCH PRICE — Customer row anchor (ESTIMATE only)
+   PSYCH PRICE BAR — above total (ESTIMATE only)
    ══════════════════════════════════════ */
-.customer-row {
+.psych-price-bar {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 4px;
-}
-
-.customer-name {
-  font-size: 16px;
-  color: var(--ink-soft);
-  line-height: 1.6;
-  margin-bottom: 0;
-  flex: 1;
-  min-width: 0;
-}
-
-.customer-name strong {
-  color: var(--ink);
-  font-weight: 600;
-}
-
-.psych-price {
-  display: inline-flex;
+  justify-content: flex-end;
   align-items: baseline;
-  gap: 6px;
-  padding: 6px 12px;
-  background: var(--brand-tint);
-  border-radius: 999px;
+  gap: 8px;
+  padding: var(--space-sm) var(--space-md);
+  margin-top: var(--space-md);
   position: relative;
-  white-space: nowrap;
 }
 
 .psych-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--ink-muted);
   letter-spacing: 0.02em;
@@ -261,13 +237,13 @@ body {
 
 .psych-amount {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--brand);
+  color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* Superscript source button — circular tap target */
+/* Superscript source button */
 .psych-source-btn {
   border: none;
   background: transparent;
@@ -303,7 +279,7 @@ body {
 .psych-tooltip {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
+  right: var(--space-md);
   background: var(--brand-deep);
   color: var(--surface);
   font-size: 12px;
@@ -357,8 +333,8 @@ body {
   border-bottom: none;
 }
 
-/* Alternating zebra bands on header rows only — excludes .adjustment */
-.line-item:not(.adjustment):nth-child(even) .li-header {
+/* Alternating zebra bands on header rows only — applied via JS class */
+.line-item.zebra .li-header {
   background: var(--zebra);
   margin-left: calc(-1 * var(--space-md));
   margin-right: calc(-1 * var(--space-md));
@@ -1278,7 +1254,7 @@ body {
   }
 
   /* Desktop zebra bands adjust to wider section padding */
-  .line-item:not(.adjustment):nth-child(even) .li-header {
+  .line-item.zebra .li-header {
     margin-left: calc(-1 * var(--space-lg));
     margin-right: calc(-1 * var(--space-lg));
     padding-left: var(--space-lg);
@@ -1326,6 +1302,18 @@ body {
 
   .anchor-item {
     font-size: 15px;
+  }
+
+  .psych-price-bar {
+    padding: var(--space-sm) var(--space-lg);
+  }
+
+  .psych-label {
+    font-size: 15px;
+  }
+
+  .psych-amount {
+    font-size: 18px;
   }
 
   .total-bar {
@@ -1421,7 +1409,7 @@ body {
   .total-bar { break-inside: avoid; }
   .btn-row { display: none; }
   .budget-wrap { display: none; }
-  .line-item:not(.adjustment):nth-child(even) .li-header {
+  .line-item.zebra .li-header {
     background: #F5F5F5 !important;
   }
 }
