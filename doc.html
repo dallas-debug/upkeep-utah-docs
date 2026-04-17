@@ -129,8 +129,7 @@
     html += '<div class="section-label">Scope of Work</div>';
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
-      var zebraClass = (i % 2 === 0) ? ' zebra' : '';
-      html += '<div class="line-item' + zebraClass + '">';
+      html += '<div class="line-item">';
       html += '<div class="li-header">';
       html += '<span class="li-title">' + esc(it.title) + '</span>';
       html += '<span class="li-price">' + currency(it.price) + '</span>';
