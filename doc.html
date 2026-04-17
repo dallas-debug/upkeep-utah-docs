@@ -109,36 +109,7 @@
   /* Customer info */
   html += '<div class="section">';
   html += '<div class="section-label">Customer</div>';
-
-  /* Customer name row — may include psych price anchor on ESTIMATE only */
-  if (wo.customerName || (isEstimate && wo.avgCost)) {
-    html += '<div class="customer-row">';
-    if (wo.customerName) {
-      html += '<p class="customer-name"><strong>' + esc(wo.customerName) + '</strong></p>';
-    } else {
-      html += '<p class="customer-name"></p>';
-    }
-
-    /* Psych price anchor — ESTIMATE only, only if contractor provided avgCost */
-    if (isEstimate && wo.avgCost) {
-      var avgLabel = wo.avgCostLabel || 'Average Cost';
-      var avgAmount = currency(wo.avgCost);
-      html += '<div class="psych-price">';
-      html += '<span class="psych-label">' + esc(avgLabel) + ':</span> ';
-      html += '<span class="psych-amount">' + avgAmount + '</span>';
-      if (wo.avgCostSource) {
-        html += '<button class="psych-source-btn" type="button" ';
-        html += 'data-source="' + esc(wo.avgCostSource) + '" ';
-        html += 'aria-label="View source">';
-        html += '<sup>1</sup>';
-        html += '</button>';
-      }
-      html += '</div>';
-    }
-
-    html += '</div>';
-  }
-
+  if (wo.customerName)    html += '<p><strong>' + esc(wo.customerName) + '</strong></p>';
   if (wo.customerAddress) html += '<p>' + esc(wo.customerAddress) + '</p>';
   if (wo.customerPhone)   html += '<p>' + esc(wo.customerPhone) + '</p>';
   if (wo.customerEmail)   html += '<p>' + esc(wo.customerEmail) + '</p>';
@@ -158,7 +129,8 @@
     html += '<div class="section-label">Scope of Work</div>';
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
-      html += '<div class="line-item">';
+      var zebraClass = (i % 2 === 0) ? ' zebra' : '';
+      html += '<div class="line-item' + zebraClass + '">';
       html += '<div class="li-header">';
       html += '<span class="li-title">' + esc(it.title) + '</span>';
       html += '<span class="li-price">' + currency(it.price) + '</span>';
@@ -218,6 +190,23 @@
       html += '</li>';
     }
     html += '</ul>';
+    html += '</div>';
+  }
+
+  /* Psych price anchor — directly above total bar, ESTIMATE only */
+  if (isEstimate && wo.avgCost) {
+    var avgLabel = wo.avgCostLabel || 'Average Cost';
+    var avgAmount = currency(wo.avgCost);
+    html += '<div class="psych-price-bar">';
+    html += '<span class="psych-label">' + esc(avgLabel) + ':</span> ';
+    html += '<span class="psych-amount">' + avgAmount + '</span>';
+    if (wo.avgCostSource) {
+      html += '<button class="psych-source-btn" type="button" ';
+      html += 'data-source="' + esc(wo.avgCostSource) + '" ';
+      html += 'aria-label="View source">';
+      html += '<sup>1</sup>';
+      html += '</button>';
+    }
     html += '</div>';
   }
 
