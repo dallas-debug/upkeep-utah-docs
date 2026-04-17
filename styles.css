@@ -333,8 +333,12 @@ body {
   border-bottom: none;
 }
 
-/* Alternating zebra bands on header rows only — applied via JS class */
-.line-item.zebra .li-header {
+/* Background band on every priced row (title + price) */
+.li-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
   background: var(--zebra);
   margin-left: calc(-1 * var(--space-md));
   margin-right: calc(-1 * var(--space-md));
@@ -343,13 +347,6 @@ body {
   padding-top: 4px;
   padding-bottom: 4px;
   border-radius: var(--radius-sm);
-}
-
-.li-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
 }
 
 .li-title {
@@ -1251,10 +1248,6 @@ body {
 
   .li-header {
     gap: 16px;
-  }
-
-  /* Desktop zebra bands adjust to wider section padding */
-  .line-item.zebra .li-header {
     margin-left: calc(-1 * var(--space-lg));
     margin-right: calc(-1 * var(--space-lg));
     padding-left: var(--space-lg);
@@ -1409,7 +1402,7 @@ body {
   .total-bar { break-inside: avoid; }
   .btn-row { display: none; }
   .budget-wrap { display: none; }
-  .line-item.zebra .li-header {
+  .li-header {
     background: #F5F5F5 !important;
   }
 }
