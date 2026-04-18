@@ -551,15 +551,37 @@
     var budgetNotes    = budgetNotesEl  ? budgetNotesEl.value  : '';
 
     var selectedOptionTitle = '';
+    var selectedOptionPrice = 0;
     if (isOptionsMode) {
       var selectedEl = document.querySelector('.option-item.option-selected');
       if (selectedEl) {
         var titleEl = selectedEl.querySelector('.li-title');
         selectedOptionTitle = titleEl ? titleEl.textContent : '';
+        selectedOptionPrice = parseFloat(selectedEl.getAttribute('data-price')) || 0;
       }
     }
 
+    /* Build line items summary string */
+    var lineItemsSummary = items.map(function(it) {
+      return it.title + ' (' + currency(it.price) + ')';
+    }).join('; ');
+
+    /* Calculate totals */
+    var subtotalVal = 0;
+    for (var k = 0; k < items.length; k++) {
+      subtotalVal += parseFloat(items[k].price) || 0;
+    }
+    var totalVal = isOptionsMode
+      ? Math.max(0, selectedOptionPrice - discount)
+      : Math.max(0, subtotalVal - discount);
+
+    /* Build context anchors summary */
+    var anchorsAll = (wo.contextAnchors || []).slice();
+    if ((wo.contextFreeText || '').trim()) anchorsAll.push(wo.contextFreeText.trim());
+    var anchorsSummary = anchorsAll.join('; ');
+
     var data = {
+      /* Signature fields */
       documentId:             docId,
       documentStatus:         wo.status || 'ESTIMATE',
       customerName:           customerName,
@@ -569,7 +591,23 @@
       selectedOption:         selectedOptionTitle,
       budgetAlignmentAmount:  budgetAmount,
       budgetAlignmentNotes:   budgetNotes,
-      signature:              canvas.toDataURL('image/png')
+      signature:              canvas.toDataURL('image/png'),
+      /* Work order fields */
+      customerAddress:        wo.customerAddress  || '',
+      customerPhone:          wo.customerPhone    || '',
+      customerEmail:          wo.customerEmail    || '',
+      scheduledDate:          wo.scheduledDate    || '',
+      lineItems:              lineItemsSummary,
+      subtotal:               subtotalVal.toFixed(2),
+      discount:               discount.toFixed(2),
+      discountLabel:          wo.discountLabel    || '',
+      total:                  totalVal.toFixed(2),
+      notes:                  wo.notes            || '',
+      contextAnchors:         anchorsSummary,
+      budgetAlignment:        wo.budgetAlignment  ? 'true' : 'false',
+      optionsMode:            wo.optionsMode      ? 'true' : 'false',
+      avgCost:                wo.avgCost          || '',
+      avgCostLabel:           wo.avgCostLabel     || ''
     };
 
     try {
@@ -583,6 +621,17 @@
         mode: 'no-cors',
         body: params
       });
+
+      /* Lock option items so selection can't be changed after signing */
+      if (isOptionsMode) {
+        document.querySelectorAll('.option-item').forEach(function(el) {
+          el.style.pointerEvents = 'none';
+          el.style.cursor = 'default';
+          if (!el.classList.contains('option-selected')) {
+            el.style.opacity = '0.45';
+          }
+        });
+      }
 
       freezeForm();
 
