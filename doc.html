@@ -86,12 +86,13 @@
   var isEstimate = (st === 'ESTIMATE' || st === '');
   var isOptionsMode = !!(wo.optionsMode);
 
+  /* Diagnostic — open browser console to verify */
+  console.log('optionsMode raw:', wo.optionsMode, '| isOptionsMode:', isOptionsMode);
+
   /* ── Calculate total ── */
   var items = wo.lineItems || [];
   var discount = parseFloat(wo.discount) || 0;
 
-  /* In options mode, total is calculated from the selected option only.
-     In normal mode, total is the sum of all items minus discount. */
   function calcNormalTotal() {
     var subtotal = 0;
     for (var i = 0; i < items.length; i++) {
@@ -144,12 +145,11 @@
     html += '<div class="section-label">Scope of Work</div>';
 
     if (isOptionsMode) {
-      /* OPTIONS MODE — render each item as a selectable option card */
       html += '<p class="options-instruction">Please select one option below before signing.</p>';
       for (var i = 0; i < items.length; i++) {
         var it = items[i];
-        var itemId = esc(it.id || ('option-' + i));
-        html += '<div class="line-item option-item" id="option-' + itemId + '" data-item-id="' + itemId + '" data-price="' + (parseFloat(it.price) || 0) + '">';
+        var itemId = 'option-' + i;
+        html += '<div class="line-item option-item" id="' + itemId + '" data-item-id="' + itemId + '" data-price="' + (parseFloat(it.price) || 0) + '">';
         html += '<div class="li-header">';
         html += '<span class="li-title">' + esc(it.title) + '</span>';
         html += '<span class="li-price">' + currency(it.price) + '</span>';
@@ -165,7 +165,6 @@
         html += '</div>';
       }
     } else {
-      /* NORMAL MODE — render items as before */
       for (var i = 0; i < items.length; i++) {
         var it = items[i];
         html += '<div class="line-item">';
@@ -184,7 +183,6 @@
         html += '</div>';
       }
 
-      /* Discount row — normal mode only */
       if (discount > 0) {
         var discLabel = wo.discountLabel || 'Adjustment';
         html += '<div class="line-item adjustment">';
@@ -249,7 +247,7 @@
     html += '</div>';
   }
 
-  /* Total bar — hidden in options mode until customer selects an option */
+  /* Total bar — hidden in options mode until selection */
   if (isOptionsMode) {
     html += '<div class="total-bar" id="total-bar" style="display:none;">';
     html += '<span>TOTAL</span>';
@@ -352,32 +350,59 @@
     var optionsTotal = document.getElementById('options-total');
     var optionItems = document.querySelectorAll('.option-item');
 
+    console.log('Options mode active. Found', optionItems.length, 'option items.');
+
+    function handleOptionSelect(el) {
+      var clickedId = el.getAttribute('data-item-id');
+      var clickedPrice = parseFloat(el.getAttribute('data-price')) || 0;
+
+      /* Deselect all */
+      optionItems.forEach(function(item) {
+        item.classList.remove('option-selected');
+      });
+
+      if (selectedOptionId === clickedId) {
+        /* Tapping already-selected deselects */
+        selectedOptionId = null;
+        totalBar.style.display = 'none';
+      } else {
+        /* Select this option */
+        selectedOptionId = clickedId;
+        el.classList.add('option-selected');
+        var t = clickedPrice - discount;
+        if (t < 0) t = 0;
+        optionsTotal.textContent = currency(t);
+        totalBar.style.display = '';
+      }
+
+      console.log('Selected option ID:', selectedOptionId);
+    }
+
     optionItems.forEach(function(el) {
-      el.addEventListener('click', function() {
-        var clickedId = this.getAttribute('data-item-id');
-        var clickedPrice = parseFloat(this.getAttribute('data-price')) || 0;
+      /* Use touchend for mobile, click for desktop */
+      var touchMoved = false;
 
-        /* Deselect all */
-        optionItems.forEach(function(item) {
-          item.classList.remove('option-selected');
-        });
+      el.addEventListener('touchstart', function() {
+        touchMoved = false;
+      }, { passive: true });
 
-        if (selectedOptionId === clickedId) {
-          /* Tapping the already-selected option deselects it */
-          selectedOptionId = null;
-          totalBar.style.display = 'none';
-        } else {
-          /* Select this option */
-          selectedOptionId = clickedId;
-          this.classList.add('option-selected');
+      el.addEventListener('touchmove', function() {
+        touchMoved = true;
+      }, { passive: true });
 
-          /* Calculate total: selected option price minus discount */
-          var t = clickedPrice - discount;
-          if (t < 0) t = 0;
-          optionsTotal.textContent = currency(t);
-          totalBar.style.display = '';
+      el.addEventListener('touchend', function(e) {
+        if (!touchMoved) {
+          e.preventDefault();
+          handleOptionSelect(el);
         }
-      }.bind(el));
+      });
+
+      el.addEventListener('click', function(e) {
+        /* Only fire on desktop — touchend already handled mobile */
+        if (!('ontouchstart' in window)) {
+          handleOptionSelect(el);
+        }
+      });
     });
   }
 
@@ -503,7 +528,6 @@
     var budgetAmount = budgetAmountEl ? budgetAmountEl.value : '';
     var budgetNotes = budgetNotesEl ? budgetNotesEl.value : '';
 
-    /* Capture selected option title if in options mode */
     var selectedOptionTitle = '';
     if (isOptionsMode) {
       var selectedEl = document.querySelector('.option-item.option-selected');
