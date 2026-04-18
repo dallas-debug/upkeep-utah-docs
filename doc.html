@@ -15,7 +15,7 @@
 
 <script>
 (function() {
-  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEkYZ8hni7Z6XIFI9t44dgc8XhphC52BvRV8IGiZjoXwU-C5bjuikxgYZPueTu-cvs/exec';
+  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyr43OxCDmqXVFHEHX_ZgFqQkyNg4ouUURYPjYeE7gbgBASGH1F_ZWpmK5llj25xpmI/exec';
 
   var page = document.getElementById('page');
 
@@ -69,7 +69,6 @@
     return d.toLocaleDateString('en-US', opts);
   }
 
-  /* Convert a Long timestamp to a readable date string. Returns null if missing or invalid. */
   function formatTimestamp(ts) {
     if (!ts) return null;
     var d = new Date(ts);
@@ -86,7 +85,6 @@
   var isEstimate = (st === 'ESTIMATE' || st === '');
   var isOptionsMode = !!(wo.optionsMode);
 
-  /* Diagnostic — open browser console to verify */
   console.log('optionsMode raw:', wo.optionsMode, '| isOptionsMode:', isOptionsMode);
 
   /* ── Calculate total ── */
@@ -203,12 +201,29 @@
   /* Notes */
   if (wo.notes && wo.notes.trim()) {
     html += '<div class="section">';
-    html += '<div class="section-label">Contractor Notes</div>';
+    html += '<div class="section-label">Notes to Customer</div>';
     html += '<p class="notes-text">' + esc(wo.notes) + '</p>';
     html += '</div>';
   }
 
-  /* Context anchors — ESTIMATE only */
+  /* Psych price anchor — ESTIMATE only, normal mode only */
+  if (isEstimate && !isOptionsMode && wo.avgCost) {
+    var avgLabel = wo.avgCostLabel || 'Average Cost';
+    var avgAmount = currency(wo.avgCost);
+    html += '<div class="psych-price-bar">';
+    html += '<span class="psych-label">' + esc(avgLabel) + ':</span> ';
+    html += '<span class="psych-amount">' + avgAmount + '</span>';
+    if (wo.avgCostSource) {
+      html += '<button class="psych-source-btn" type="button" ';
+      html += 'data-source="' + esc(wo.avgCostSource) + '" ';
+      html += 'aria-label="View source">';
+      html += '<sup>1</sup>';
+      html += '</button>';
+    }
+    html += '</div>';
+  }
+
+  /* Context anchors — ESTIMATE only, right-justified above total */
   var anchors = wo.contextAnchors || [];
   var anchorFreeText = (wo.contextFreeText || '').trim();
   if (isEstimate && (anchors.length > 0 || anchorFreeText)) {
@@ -227,23 +242,6 @@
       html += '</li>';
     }
     html += '</ul>';
-    html += '</div>';
-  }
-
-  /* Psych price anchor — ESTIMATE only, normal mode only */
-  if (isEstimate && !isOptionsMode && wo.avgCost) {
-    var avgLabel = wo.avgCostLabel || 'Average Cost';
-    var avgAmount = currency(wo.avgCost);
-    html += '<div class="psych-price-bar">';
-    html += '<span class="psych-label">' + esc(avgLabel) + ':</span> ';
-    html += '<span class="psych-amount">' + avgAmount + '</span>';
-    if (wo.avgCostSource) {
-      html += '<button class="psych-source-btn" type="button" ';
-      html += 'data-source="' + esc(wo.avgCostSource) + '" ';
-      html += 'aria-label="View source">';
-      html += '<sup>1</sup>';
-      html += '</button>';
-    }
     html += '</div>';
   }
 
@@ -313,7 +311,7 @@
 
     html += '<label class="approval-label" for="signer-name">Full name</label>';
     html += '<span class="approval-helper">Authorized signer</span>';
-    html += '<input type="text" id="signer-name" class="approval-input" placeholder="Enter your full name" autocomplete="name">';
+    html += '<input type="text" id="signer-name" class="approval-input" placeholder="Enter your full name" autocomplete="name" inputmode="text" enterkeyhint="done">';
 
     html += '<label class="approval-label">Date</label>';
     html += '<div class="approval-date" id="sig-date">' + todayString() + '</div>';
@@ -342,6 +340,17 @@
   html += '</div>';
 
   page.innerHTML = html;
+
+  /* ── Dismiss keyboard on Enter for signer name field ── */
+  var signerNameEl = document.getElementById('signer-name');
+  if (signerNameEl) {
+    signerNameEl.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.blur();
+      }
+    });
+  }
 
   /* ── Options mode interaction logic ── */
   if (isOptionsMode) {
@@ -379,15 +388,18 @@
     }
 
     optionItems.forEach(function(el) {
-      /* Use touchend for mobile, click for desktop */
+      var touchStartY = 0;
       var touchMoved = false;
 
-      el.addEventListener('touchstart', function() {
+      el.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
         touchMoved = false;
       }, { passive: true });
 
-      el.addEventListener('touchmove', function() {
-        touchMoved = true;
+      el.addEventListener('touchmove', function(e) {
+        if (Math.abs(e.touches[0].clientY - touchStartY) > 8) {
+          touchMoved = true;
+        }
       }, { passive: true });
 
       el.addEventListener('touchend', function(e) {
@@ -395,10 +407,10 @@
           e.preventDefault();
           handleOptionSelect(el);
         }
-      });
+      }, { passive: false });
 
       el.addEventListener('click', function(e) {
-        /* Only fire on desktop — touchend already handled mobile */
+        /* Only fire on non-touch devices */
         if (!('ontouchstart' in window)) {
           handleOptionSelect(el);
         }
@@ -516,17 +528,27 @@
       return;
     }
 
+    /* Options mode — require a selection before submitting */
+    if (isOptionsMode) {
+      var selectedEl = document.querySelector('.option-item.option-selected');
+      if (!selectedEl) {
+        alert('Please select an option before submitting.');
+        return;
+      }
+    }
+
     submitBtn.disabled = true;
     submitBtn.innerText = 'SENDING...';
 
     var customerName = wo.customerName || 'Unknown';
     var docId = wo.id || 'N/A';
     var timestamp = new Date().toLocaleString();
+    var dateOnly = new Date().toISOString().split('T')[0];
 
     var budgetAmountEl = document.getElementById('budget-amount');
-    var budgetNotesEl = document.getElementById('budget-notes');
-    var budgetAmount = budgetAmountEl ? budgetAmountEl.value : '';
-    var budgetNotes = budgetNotesEl ? budgetNotesEl.value : '';
+    var budgetNotesEl  = document.getElementById('budget-notes');
+    var budgetAmount   = budgetAmountEl ? budgetAmountEl.value : '';
+    var budgetNotes    = budgetNotesEl  ? budgetNotesEl.value  : '';
 
     var selectedOptionTitle = '';
     if (isOptionsMode) {
@@ -538,16 +560,16 @@
     }
 
     var data = {
-      name: name,
-      date: new Date().toISOString().split('T')[0],
-      signature: canvas.toDataURL('image/png'),
-      customerName: customerName,
-      documentId: docId,
-      documentStatus: wo.status || 'ESTIMATE',
-      timestamp: timestamp,
-      budgetAlignmentAmount: budgetAmount,
-      budgetAlignmentNotes: budgetNotes,
-      selectedOption: selectedOptionTitle
+      documentId:             docId,
+      documentStatus:         wo.status || 'ESTIMATE',
+      customerName:           customerName,
+      name:                   name,
+      date:                   dateOnly,
+      timestamp:              timestamp,
+      selectedOption:         selectedOptionTitle,
+      budgetAlignmentAmount:  budgetAmount,
+      budgetAlignmentNotes:   budgetNotes,
+      signature:              canvas.toDataURL('image/png')
     };
 
     try {
@@ -591,7 +613,6 @@
     var notesInput = document.getElementById('budget-notes');
     var pendingEl = document.getElementById('budget-pending');
     var pendingAmountEl = document.getElementById('budget-pending-amount');
-    var budgetSubmitted = false;
 
     function openBudgetModal() {
       overlay.classList.add('open');
@@ -627,7 +648,6 @@
 
       closeBudgetModal();
 
-      budgetSubmitted = true;
       budgetBtn.classList.add('submitted');
       budgetBtn.textContent = 'Budget Alignment Requested \u2713';
 
