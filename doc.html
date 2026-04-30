@@ -276,9 +276,10 @@
     html += '</div>';
   }
 
-  /* Signature section — ESTIMATE only */
+  /* Approval section — ESTIMATE only */
   if (isEstimate) {
 
+    /* Already-submitted signature preview */
     if (wo.signatureBase64) {
       html += '<div class="section">';
       html += '<div class="section-label">Customer Approval</div>';
@@ -286,36 +287,30 @@
       html += '</div>';
     }
 
+    /* Approval action buttons — Approve and (optional) Fit My Budget */
     html += '<div class="section approval-section" id="approval-card">';
     html += '<div class="section-label">Customer Approval</div>';
 
+    html += '<div class="approval-actions">';
+    html += '<button class="btn-approve" id="btn-approve" type="button">Approve</button>';
     if (wo.budgetAlignment) {
-      html += '<div class="budget-wrap" id="budget-wrap">';
-      html += '<button class="budget-btn" id="budget-btn" type="button">Request Budget Alignment</button>';
+      html += '<button class="btn-budget" id="budget-btn" type="button">Fit My Budget</button>';
       html += '<div class="budget-pending" id="budget-pending" style="display:none;">';
       html += '<span class="budget-pending-amount" id="budget-pending-amount"></span>';
       html += '<span class="budget-pending-label">\u2014 pending approval</span>';
       html += '</div>';
-      html += '</div>';
-
-      html += '<div class="budget-modal-overlay" id="budget-modal-overlay">';
-      html += '<div class="budget-modal">';
-      html += '<div class="budget-modal-header">';
-      html += '<h4>Budget Alignment</h4>';
-      html += '<button class="budget-modal-close" id="budget-modal-close" type="button" aria-label="Close">&times;</button>';
-      html += '</div>';
-      html += '<p class="budget-modal-desc">Enter your desired budget and let us know what changes you\'d like to make it work.</p>';
-      html += '<label class="budget-modal-label" for="budget-amount">Your Budget</label>';
-      html += '<div class="budget-input-wrap">';
-      html += '<span class="budget-input-prefix">$</span>';
-      html += '<input type="number" id="budget-amount" class="budget-input" placeholder="0.00" min="0" step="0.01" inputmode="decimal">';
-      html += '</div>';
-      html += '<label class="budget-modal-label" for="budget-notes">Changes or Notes <span class="budget-optional">(optional)</span></label>';
-      html += '<textarea id="budget-notes" class="budget-textarea" rows="3" placeholder="What changes would help reach this budget?"></textarea>';
-      html += '<button class="budget-modal-submit" id="budget-modal-submit" type="button">Submit</button>';
-      html += '</div>';
-      html += '</div>';
     }
+    html += '</div>';
+
+    html += '</div>';
+
+    /* Signing modal — opens when Approve is tapped */
+    html += '<div class="sign-modal-overlay" id="sign-modal-overlay">';
+    html += '<div class="sign-modal" id="sign-modal">';
+    html += '<div class="sign-modal-header">';
+    html += '<h4>Approve &amp; Sign</h4>';
+    html += '<button class="sign-modal-close" id="sign-modal-close" type="button" aria-label="Close">&times;</button>';
+    html += '</div>';
 
     html += '<label class="approval-label" for="signer-name">Full name</label>';
     html += '<span class="approval-helper">Authorized signer</span>';
@@ -333,9 +328,31 @@
 
     html += '<div class="btn-row">';
     html += '<button class="btn-clear" id="btn-clear" type="button">Clear Signature</button>';
-    html += '<button class="btn-submit" id="btn-submit" type="button">Submit Signature</button>';
+    html += '<button class="btn-submit" id="btn-submit" type="button">Approve &amp; Submit</button>';
     html += '</div>';
     html += '</div>';
+    html += '</div>';
+
+    /* Budget alignment modal */
+    if (wo.budgetAlignment) {
+      html += '<div class="budget-modal-overlay" id="budget-modal-overlay">';
+      html += '<div class="budget-modal">';
+      html += '<div class="budget-modal-header">';
+      html += '<h4>Fit My Budget</h4>';
+      html += '<button class="budget-modal-close" id="budget-modal-close" type="button" aria-label="Close">&times;</button>';
+      html += '</div>';
+      html += '<p class="budget-modal-desc">Enter your desired budget and let us know what changes you\'d like to make it work.</p>';
+      html += '<label class="budget-modal-label" for="budget-amount">Your Budget</label>';
+      html += '<div class="budget-input-wrap">';
+      html += '<span class="budget-input-prefix">$</span>';
+      html += '<input type="number" id="budget-amount" class="budget-input" placeholder="0.00" min="0" step="0.01" inputmode="decimal">';
+      html += '</div>';
+      html += '<label class="budget-modal-label" for="budget-notes">Changes or Notes <span class="budget-optional">(optional)</span></label>';
+      html += '<textarea id="budget-notes" class="budget-textarea" rows="3" placeholder="What changes would help reach this budget?"></textarea>';
+      html += '<button class="budget-modal-submit" id="budget-modal-submit" type="button">Submit</button>';
+      html += '</div>';
+      html += '</div>';
+    }
   }
 
   /* Footer */
@@ -426,18 +443,56 @@
     });
   }
 
-  /* ── Signature canvas logic (ESTIMATE only) ── */
+  /* ── Approve button & signing modal logic (ESTIMATE only) ── */
   if (isEstimate) {
-  var canvas = document.getElementById('sig-canvas');
-  var ctx = canvas.getContext('2d');
-  var wrap = document.getElementById('canvas-wrap');
-  var hint = document.getElementById('canvas-hint');
-  var submitBtn = document.getElementById('btn-submit');
-  var clearBtn = document.getElementById('btn-clear');
-  var signerInput = document.getElementById('signer-name');
-  var approvalCard = document.getElementById('approval-card');
-  var drawing = false;
-  var hasDrawn = false;
+
+  var approveBtn      = document.getElementById('btn-approve');
+  var signOverlay     = document.getElementById('sign-modal-overlay');
+  var signCloseBtn    = document.getElementById('sign-modal-close');
+  var canvas          = document.getElementById('sig-canvas');
+  var ctx             = canvas.getContext('2d');
+  var wrap            = document.getElementById('canvas-wrap');
+  var hint            = document.getElementById('canvas-hint');
+  var submitBtn       = document.getElementById('btn-submit');
+  var clearBtn        = document.getElementById('btn-clear');
+  var signerInput     = document.getElementById('signer-name');
+  var approvalCard    = document.getElementById('approval-card');
+  var drawing         = false;
+  var hasDrawn        = false;
+
+  function openSignModal() {
+    /* Options mode — require a selection before opening */
+    if (isOptionsMode) {
+      var selectedEl = document.querySelector('.option-item.option-selected');
+      if (!selectedEl) {
+        alert('Please select an option before approving.');
+        return;
+      }
+    }
+    signOverlay.classList.add('open');
+    /* Resize canvas now that the modal is laid out */
+    setTimeout(function() {
+      resizeCanvas();
+      signerInput.focus();
+    }, 250);
+  }
+
+  function closeSignModal() {
+    signOverlay.classList.remove('open');
+  }
+
+  approveBtn.addEventListener('click', openSignModal);
+  signCloseBtn.addEventListener('click', closeSignModal);
+
+  signOverlay.addEventListener('click', function(e) {
+    if (e.target === signOverlay) closeSignModal();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && signOverlay.classList.contains('open')) {
+      closeSignModal();
+    }
+  });
 
   function resizeCanvas() {
     var rect = wrap.getBoundingClientRect();
@@ -450,9 +505,8 @@
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
   }
-  resizeCanvas();
   window.addEventListener('resize', function() {
-    if (!hasDrawn) resizeCanvas();
+    if (!hasDrawn && signOverlay.classList.contains('open')) resizeCanvas();
   });
 
   function getPos(e) {
@@ -648,19 +702,24 @@
 
       freezeForm();
 
-      var budgetBtn = document.getElementById('budget-btn');
-      if (budgetBtn) {
-        budgetBtn.disabled = true;
-        budgetBtn.classList.add('submitted');
+      /* Disable post-submission UI on the page */
+      var budgetBtnAfter = document.getElementById('budget-btn');
+      if (budgetBtnAfter) {
+        budgetBtnAfter.disabled = true;
+        budgetBtnAfter.classList.add('submitted');
       }
+      approveBtn.disabled = true;
+      approveBtn.classList.add('submitted');
 
+      /* Close the signing modal and replace approval card with thank-you */
+      closeSignModal();
       approvalCard.innerHTML = '<div class="thank-you">&#10003; Thank you! Your signature has been submitted successfully.</div>';
 
     } catch (error) {
       console.error('Submission error:', error);
       alert('Submission error. Please try again.');
       submitBtn.disabled = false;
-      submitBtn.innerText = 'Submit Signature';
+      submitBtn.innerText = 'Approve & Submit';
     }
   });
   }
