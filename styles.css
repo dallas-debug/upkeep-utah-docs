@@ -166,10 +166,20 @@ body {
   letter-spacing: -0.02em;
 }
 
+.doc-type .work-order-id {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  margin-top: 8px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
 .doc-type .updated {
   font-size: 15px;
   color: var(--ink-muted);
-  margin-top: 10px;
+  margin-top: 6px;
   font-weight: 500;
   letter-spacing: 0.02em;
 }
@@ -1183,7 +1193,8 @@ body {
 
   .doc-type { padding: var(--space-2xl) var(--space-lg) var(--space-md); }
   .doc-type h2 { font-size: 44px; }
-  .doc-type .updated { font-size: 16px; margin-top: 12px; }
+  .doc-type .work-order-id { font-size: 15px; margin-top: 10px; }
+  .doc-type .updated { font-size: 16px; margin-top: 8px; }
 
   .section { padding: var(--space-lg) var(--space-lg); }
   .section-label { font-size: 22px; margin-bottom: 10px; }
