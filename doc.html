@@ -87,6 +87,11 @@
 
   console.log('optionsMode raw:', wo.optionsMode, '| isOptionsMode:', isOptionsMode);
 
+  /* ── Resolve work order identifier ──
+     Android sends the YYMMDD-NNN job number serialized as `jobId`.
+     We accept legacy keys (workOrderId, id) as fallbacks for safety. */
+  var workOrderId = wo.jobId || wo.workOrderId || wo.id || '';
+
   /* ── Calculate total ── */
   var items = wo.lineItems || [];
   var discount = parseFloat(wo.discount) || 0;
@@ -116,6 +121,9 @@
   /* Doc type */
   html += '<div class="doc-type">';
   html += '<h2>' + esc(statusLabel(wo.status)) + '</h2>';
+  if (workOrderId) {
+    html += '<div class="work-order-id">Work Order #' + esc(workOrderId) + '</div>';
+  }
   html += '<div class="updated">Updated ' + todayString() + '</div>';
   html += '</div>';
 
@@ -537,11 +545,15 @@
       }
     }
 
+    if (!workOrderId) {
+      alert('This document is missing a Work Order ID and cannot be submitted. Please contact Upkeep Utah.');
+      return;
+    }
+
     submitBtn.disabled = true;
     submitBtn.innerText = 'SENDING...';
 
     var customerName = wo.customerName || 'Unknown';
-    var docId = wo.id || 'N/A';
     var timestamp = new Date().toLocaleString();
     var dateOnly = new Date().toISOString().split('T')[0];
 
@@ -581,8 +593,9 @@
     var anchorsSummary = anchorsAll.join('; ');
 
     var data = {
+      /* Identifier — matches sheet column A "Work Order ID" */
+      workOrderId:            workOrderId,
       /* Signature fields */
-      documentId:             docId,
       documentStatus:         wo.status || 'ESTIMATE',
       customerName:           customerName,
       name:                   name,
