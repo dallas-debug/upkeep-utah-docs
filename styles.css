@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   UPKEEP UTAH — ESTIMATE / INVOICE / WORK ORDER  v4.1
+   UPKEEP UTAH — ESTIMATE / INVOICE / WORK ORDER  v4.2
    MOBILE-FIRST — base styles target phones, min-width scales up
    Palette: Deep slate + burnt orange (#c2410f)
    Fonts: Outfit (display) + DM Sans (body)
@@ -554,49 +554,101 @@ body {
   letter-spacing: -0.02em;
 }
 
-.budget-wrap {
-  text-align: center;
-  padding: var(--space-md) var(--space-md) 0;
+/* ══════════════════════════════════════
+   APPROVAL ACTIONS — Approve & Fit My Budget (stacked)
+   ══════════════════════════════════════ */
+.approval-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: var(--space-sm);
 }
 
-.budget-btn {
-  display: inline-block;
+.btn-approve {
+  width: 100%;
+  padding: 18px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--surface);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 14px var(--accent-glow);
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-approve::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.btn-approve:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 6px 20px rgba(194,65,15,0.25);
+  transform: translateY(-1px);
+}
+
+.btn-approve:active:not(:disabled) {
+  background: #8B2E08;
+  transform: translateY(0);
+}
+
+.btn-approve:disabled,
+.btn-approve.submitted {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-budget {
+  width: 100%;
+  padding: 16px;
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--brand);
   background: transparent;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 14px 32px;
   cursor: pointer;
   transition: all 0.25s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.budget-btn:hover {
+.btn-budget:hover {
   border-color: var(--brand);
   background: var(--brand-tint);
 }
 
-.budget-btn:active {
+.btn-budget:active {
   background: var(--brand-wash);
 }
 
-.budget-btn.submitted {
+.btn-budget.submitted {
   background: var(--brand-mid);
   color: var(--surface);
   border-color: var(--brand-mid);
 }
 
-.budget-btn.submitted:hover {
+.btn-budget.submitted:hover {
   background: var(--brand);
   border-color: var(--brand);
 }
 
-.budget-btn:disabled {
+.btn-budget:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -624,6 +676,11 @@ body {
   font-style: italic;
 }
 
+/* ══════════════════════════════════════
+   SHARED MODAL OVERLAY (signing & budget)
+   Bottom sheet on mobile, centered card on desktop
+   ══════════════════════════════════════ */
+.sign-modal-overlay,
 .budget-modal-overlay {
   position: fixed;
   inset: 0;
@@ -639,11 +696,13 @@ body {
   backdrop-filter: blur(4px);
 }
 
+.sign-modal-overlay.open,
 .budget-modal-overlay.open {
   opacity: 1;
   visibility: visible;
 }
 
+.sign-modal,
 .budget-modal {
   background: var(--surface);
   width: 100%;
@@ -654,12 +713,17 @@ body {
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.15);
+  max-height: 92vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
+.sign-modal-overlay.open .sign-modal,
 .budget-modal-overlay.open .budget-modal {
   transform: translateY(0);
 }
 
+.sign-modal-header,
 .budget-modal-header {
   display: flex;
   justify-content: space-between;
@@ -667,6 +731,7 @@ body {
   margin-bottom: var(--space-md);
 }
 
+.sign-modal-header h4,
 .budget-modal-header h4 {
   font-family: var(--font-display);
   font-size: 20px;
@@ -674,6 +739,7 @@ body {
   color: var(--brand);
 }
 
+.sign-modal-close,
 .budget-modal-close {
   border: none;
   background: transparent;
@@ -685,6 +751,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.sign-modal-close:hover,
 .budget-modal-close:hover {
   color: var(--ink);
 }
@@ -696,7 +763,8 @@ body {
   margin-bottom: var(--space-lg);
 }
 
-.budget-modal-label {
+.budget-modal-label,
+.sign-modal .approval-label {
   display: block;
   font-family: var(--font-body);
   font-size: 13px;
@@ -1258,15 +1326,20 @@ body {
     line-height: 1;
   }
 
-  .budget-modal-overlay { align-items: center; }
+  .sign-modal-overlay,
+  .budget-modal-overlay {
+    align-items: center;
+  }
 
+  .sign-modal,
   .budget-modal {
     border-radius: var(--radius-lg);
     padding: var(--space-xl) var(--space-xl);
-    max-width: 440px;
+    max-width: 480px;
     transform: translateY(20px) scale(0.97);
   }
 
+  .sign-modal-overlay.open .sign-modal,
   .budget-modal-overlay.open .budget-modal {
     transform: translateY(0) scale(1);
   }
@@ -1293,8 +1366,9 @@ body {
   .pay-now-wrap { display: none; }
   .approval-section { break-inside: avoid; }
   .total-bar { break-inside: avoid; }
-  .btn-row { display: none; }
-  .budget-wrap { display: none; }
+  .approval-actions { display: none; }
+  .sign-modal-overlay { display: none; }
+  .budget-modal-overlay { display: none; }
   .option-item { cursor: default; border-color: var(--border-light) !important; }
   .li-header { background: #F5F5F5 !important; }
 }
