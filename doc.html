@@ -77,22 +77,15 @@
     return d.toLocaleDateString('en-US', opts);
   }
 
-  /* ── Set dynamic page title ── */
   document.title = 'Upkeep Utah \u2014 ' + statusLabel(wo.status);
 
-  /* ── Determine document status ── */
   var st = (wo.status || '').toUpperCase();
   var isEstimate = (st === 'ESTIMATE' || st === '');
   var isOptionsMode = !!(wo.optionsMode);
 
-  console.log('optionsMode raw:', wo.optionsMode, '| isOptionsMode:', isOptionsMode);
-
-  /* ── Resolve work order identifier ──
-     Android sends the YYMMDD-NNN job number serialized as `jobId`.
-     We accept legacy keys (workOrderId, id) as fallbacks for safety. */
+  /* Resolve work order identifier — Android sends YYMMDD-NNN as `jobId`. */
   var workOrderId = wo.jobId || wo.workOrderId || wo.id || '';
 
-  /* ── Calculate total ── */
   var items = wo.lineItems || [];
   var discount = parseFloat(wo.discount) || 0;
 
@@ -105,10 +98,16 @@
     return t < 0 ? 0 : t;
   }
 
+  /* Tracks which approval path the customer took.
+     'approve' = signing the original price as-written.
+     'counter' = signing a counter-offer at a different price. */
+  var approvalPath = 'approve';
+  var pendingBudgetAmount = '';
+  var pendingBudgetNotes = '';
+
   /* ── Build HTML ── */
   var html = '';
 
-  /* Header */
   html += '<div class="header">';
   html += '<img src="https://dallas-debug.github.io/upkeep-utah-docs/UPKEEPLOGO3.webp" class="header-logo" alt="Upkeep Utah Logo">';
   html += '<div class="header-info">';
@@ -118,7 +117,6 @@
   html += '</div>';
   html += '</div>';
 
-  /* Doc type */
   html += '<div class="doc-type">';
   html += '<h2>' + esc(statusLabel(wo.status)) + '</h2>';
   if (workOrderId) {
@@ -127,7 +125,6 @@
   html += '<div class="updated">Updated ' + todayString() + '</div>';
   html += '</div>';
 
-  /* Customer info */
   html += '<div class="section">';
   html += '<div class="section-label">Customer</div>';
   if (wo.customerName)    html += '<p><strong>' + esc(wo.customerName) + '</strong></p>';
@@ -136,7 +133,6 @@
   if (wo.customerEmail)   html += '<p>' + esc(wo.customerEmail) + '</p>';
   html += '</div>';
 
-  /* Schedule */
   var scheduledDateString = formatTimestamp(wo.scheduledDate);
   if (scheduledDateString) {
     html += '<div class="section">';
@@ -145,7 +141,6 @@
     html += '</div>';
   }
 
-  /* Line items */
   if (items.length > 0) {
     html += '<div class="section">';
     html += '<div class="section-label">Scope of Work</div>';
@@ -206,7 +201,6 @@
     html += '</div>';
   }
 
-  /* Notes */
   if (wo.notes && wo.notes.trim()) {
     html += '<div class="section">';
     html += '<div class="section-label">Notes to Customer</div>';
@@ -214,7 +208,6 @@
     html += '</div>';
   }
 
-  /* Psych price anchor — ESTIMATE only, normal mode only */
   if (isEstimate && !isOptionsMode && wo.avgCost) {
     var avgLabel = wo.avgCostLabel || 'Average Cost';
     var avgAmount = currency(wo.avgCost);
@@ -231,7 +224,6 @@
     html += '</div>';
   }
 
-  /* Context anchors — ESTIMATE only, right-justified above total */
   var anchors = wo.contextAnchors || [];
   var anchorFreeText = (wo.contextFreeText || '').trim();
   if (isEstimate && (anchors.length > 0 || anchorFreeText)) {
@@ -253,7 +245,6 @@
     html += '</div>';
   }
 
-  /* Total bar — hidden in options mode until selection */
   if (isOptionsMode) {
     html += '<div class="total-bar" id="total-bar" style="display:none;">';
     html += '<span>TOTAL</span>';
@@ -266,20 +257,16 @@
     html += '</div>';
   }
 
-  /* Guarantee */
   html += '<div class="guarantee">Never surprise charges, guaranteed.</div>';
 
-  /* Pay Now (INVOICE only) */
   if (st === 'INVOICE') {
     html += '<div class="pay-now-wrap">';
     html += '<a class="pay-now-btn" href="https://pay.upkeeputah.com/placeholder">Pay Now</a>';
     html += '</div>';
   }
 
-  /* Approval section — ESTIMATE only */
   if (isEstimate) {
 
-    /* Already-submitted signature preview */
     if (wo.signatureBase64) {
       html += '<div class="section">';
       html += '<div class="section-label">Customer Approval</div>';
@@ -295,21 +282,24 @@
     html += '<button class="btn-approve" id="btn-approve" type="button">Approve</button>';
     if (wo.budgetAlignment) {
       html += '<button class="btn-budget" id="budget-btn" type="button">Fit My Budget</button>';
-      html += '<div class="budget-pending" id="budget-pending" style="display:none;">';
-      html += '<span class="budget-pending-amount" id="budget-pending-amount"></span>';
-      html += '<span class="budget-pending-label">\u2014 pending approval</span>';
-      html += '</div>';
     }
     html += '</div>';
 
     html += '</div>';
 
-    /* Signing modal — opens when Approve is tapped */
+    /* Signing modal — opens via Approve OR via the budget dialog's Continue */
     html += '<div class="sign-modal-overlay" id="sign-modal-overlay">';
     html += '<div class="sign-modal" id="sign-modal">';
     html += '<div class="sign-modal-header">';
-    html += '<h4>Approve &amp; Sign</h4>';
+    html += '<h4 id="sign-modal-title">Approve &amp; Sign</h4>';
     html += '<button class="sign-modal-close" id="sign-modal-close" type="button" aria-label="Close">&times;</button>';
+    html += '</div>';
+
+    /* Counter-offer summary — hidden by default, shown when reached via Fit My Budget */
+    html += '<div class="counter-offer-summary" id="counter-offer-summary" style="display:none;">';
+    html += '<div class="counter-offer-label">You are offering</div>';
+    html += '<div class="counter-offer-amount" id="counter-offer-amount">$0.00</div>';
+    html += '<div class="counter-offer-context">for this work</div>';
     html += '</div>';
 
     html += '<label class="approval-label" for="signer-name">Full name</label>';
@@ -333,7 +323,7 @@
     html += '</div>';
     html += '</div>';
 
-    /* Budget alignment modal */
+    /* Budget alignment dialog */
     if (wo.budgetAlignment) {
       html += '<div class="budget-modal-overlay" id="budget-modal-overlay">';
       html += '<div class="budget-modal">';
@@ -349,13 +339,12 @@
       html += '</div>';
       html += '<label class="budget-modal-label" for="budget-notes">Changes or Notes <span class="budget-optional">(optional)</span></label>';
       html += '<textarea id="budget-notes" class="budget-textarea" rows="3" placeholder="What changes would help reach this budget?"></textarea>';
-      html += '<button class="budget-modal-submit" id="budget-modal-submit" type="button">Submit</button>';
+      html += '<button class="budget-modal-submit" id="budget-modal-submit" type="button">Continue to Sign</button>';
       html += '</div>';
       html += '</div>';
     }
   }
 
-  /* Footer */
   html += '<div class="footer">';
   html += '<img src="https://dallas-debug.github.io/upkeep-utah-docs/Warranty.webp" class="warranty-badge" alt="Lifetime Warranty">';
   html += '<div class="tagline">Built right. Guaranteed for life.</div>';
@@ -384,23 +373,18 @@
     var optionsTotal = document.getElementById('options-total');
     var optionItems = document.querySelectorAll('.option-item');
 
-    console.log('Options mode active. Found', optionItems.length, 'option items.');
-
     function handleOptionSelect(el) {
       var clickedId = el.getAttribute('data-item-id');
       var clickedPrice = parseFloat(el.getAttribute('data-price')) || 0;
 
-      /* Deselect all */
       optionItems.forEach(function(item) {
         item.classList.remove('option-selected');
       });
 
       if (selectedOptionId === clickedId) {
-        /* Tapping already-selected deselects */
         selectedOptionId = null;
         totalBar.style.display = 'none';
       } else {
-        /* Select this option */
         selectedOptionId = clickedId;
         el.classList.add('option-selected');
         var t = clickedPrice - discount;
@@ -408,8 +392,6 @@
         optionsTotal.textContent = currency(t);
         totalBar.style.display = '';
       }
-
-      console.log('Selected option ID:', selectedOptionId);
     }
 
     optionItems.forEach(function(el) {
@@ -435,7 +417,6 @@
       }, { passive: false });
 
       el.addEventListener('click', function(e) {
-        /* Only fire on non-touch devices */
         if (!('ontouchstart' in window)) {
           handleOptionSelect(el);
         }
@@ -443,25 +424,31 @@
     });
   }
 
-  /* ── Approve button & signing modal logic (ESTIMATE only) ── */
+  /* ══════════════════════════════════════════════════════════
+     Approval logic — signing modal + budget dialog (ESTIMATE)
+     openSignModal() and the budget dialog handler share scope so
+     that submitting the budget can directly invoke openSignModal.
+     ══════════════════════════════════════════════════════════ */
   if (isEstimate) {
 
-  var approveBtn      = document.getElementById('btn-approve');
-  var signOverlay     = document.getElementById('sign-modal-overlay');
-  var signCloseBtn    = document.getElementById('sign-modal-close');
-  var canvas          = document.getElementById('sig-canvas');
-  var ctx             = canvas.getContext('2d');
-  var wrap            = document.getElementById('canvas-wrap');
-  var hint            = document.getElementById('canvas-hint');
-  var submitBtn       = document.getElementById('btn-submit');
-  var clearBtn        = document.getElementById('btn-clear');
-  var signerInput     = document.getElementById('signer-name');
-  var approvalCard    = document.getElementById('approval-card');
-  var drawing         = false;
-  var hasDrawn        = false;
+  var approveBtn       = document.getElementById('btn-approve');
+  var signOverlay      = document.getElementById('sign-modal-overlay');
+  var signCloseBtn     = document.getElementById('sign-modal-close');
+  var signTitleEl      = document.getElementById('sign-modal-title');
+  var counterSummary   = document.getElementById('counter-offer-summary');
+  var counterAmountEl  = document.getElementById('counter-offer-amount');
+  var canvas           = document.getElementById('sig-canvas');
+  var ctx              = canvas.getContext('2d');
+  var wrap             = document.getElementById('canvas-wrap');
+  var hint             = document.getElementById('canvas-hint');
+  var submitBtn        = document.getElementById('btn-submit');
+  var clearBtn         = document.getElementById('btn-clear');
+  var signerInput      = document.getElementById('signer-name');
+  var approvalCard     = document.getElementById('approval-card');
+  var drawing          = false;
+  var hasDrawn         = false;
 
-  function openSignModal() {
-    /* Options mode — require a selection before opening */
+  function openSignModal(mode) {
     if (isOptionsMode) {
       var selectedEl = document.querySelector('.option-item.option-selected');
       if (!selectedEl) {
@@ -469,8 +456,21 @@
         return;
       }
     }
+
+    if (mode === 'counter') {
+      approvalPath = 'counter';
+      signTitleEl.textContent = 'Sign Your Counter-Offer';
+      submitBtn.textContent = 'Submit Counter-Offer';
+      counterAmountEl.textContent = currency(pendingBudgetAmount);
+      counterSummary.style.display = '';
+    } else {
+      approvalPath = 'approve';
+      signTitleEl.textContent = 'Approve & Sign';
+      submitBtn.textContent = 'Approve & Submit';
+      counterSummary.style.display = 'none';
+    }
+
     signOverlay.classList.add('open');
-    /* Resize canvas now that the modal is laid out */
     setTimeout(function() {
       resizeCanvas();
       signerInput.focus();
@@ -481,7 +481,10 @@
     signOverlay.classList.remove('open');
   }
 
-  approveBtn.addEventListener('click', openSignModal);
+  approveBtn.addEventListener('click', function() {
+    openSignModal('approve');
+  });
+
   signCloseBtn.addEventListener('click', closeSignModal);
 
   signOverlay.addEventListener('click', function(e) {
@@ -590,7 +593,6 @@
       return;
     }
 
-    /* Options mode — require a selection before submitting */
     if (isOptionsMode) {
       var selectedEl = document.querySelector('.option-item.option-selected');
       if (!selectedEl) {
@@ -604,6 +606,7 @@
       return;
     }
 
+    var originalSubmitText = submitBtn.innerText;
     submitBtn.disabled = true;
     submitBtn.innerText = 'SENDING...';
 
@@ -611,10 +614,9 @@
     var timestamp = new Date().toLocaleString();
     var dateOnly = new Date().toISOString().split('T')[0];
 
-    var budgetAmountEl = document.getElementById('budget-amount');
-    var budgetNotesEl  = document.getElementById('budget-notes');
-    var budgetAmount   = budgetAmountEl ? budgetAmountEl.value : '';
-    var budgetNotes    = budgetNotesEl  ? budgetNotesEl.value  : '';
+    /* Budget alignment data only sent when the customer chose the counter path */
+    var budgetAmount = approvalPath === 'counter' ? pendingBudgetAmount : '';
+    var budgetNotes  = approvalPath === 'counter' ? pendingBudgetNotes  : '';
 
     var selectedOptionTitle = '';
     var selectedOptionPrice = 0;
@@ -627,12 +629,10 @@
       }
     }
 
-    /* Build line items summary string */
     var lineItemsSummary = items.map(function(it) {
       return it.title + ' (' + currency(it.price) + ')';
     }).join('; ');
 
-    /* Calculate totals */
     var subtotalVal = 0;
     for (var k = 0; k < items.length; k++) {
       subtotalVal += parseFloat(items[k].price) || 0;
@@ -641,15 +641,12 @@
       ? Math.max(0, selectedOptionPrice - discount)
       : Math.max(0, subtotalVal - discount);
 
-    /* Build context anchors summary */
     var anchorsAll = (wo.contextAnchors || []).slice();
     if ((wo.contextFreeText || '').trim()) anchorsAll.push(wo.contextFreeText.trim());
     var anchorsSummary = anchorsAll.join('; ');
 
     var data = {
-      /* Identifier — matches sheet column A "Work Order ID" */
       workOrderId:            workOrderId,
-      /* Signature fields */
       documentStatus:         wo.status || 'ESTIMATE',
       customerName:           customerName,
       name:                   name,
@@ -659,7 +656,6 @@
       budgetAlignmentAmount:  budgetAmount,
       budgetAlignmentNotes:   budgetNotes,
       signature:              canvas.toDataURL('image/png'),
-      /* Work order fields */
       customerAddress:        wo.customerAddress  || '',
       customerPhone:          wo.customerPhone    || '',
       customerEmail:          wo.customerEmail    || '',
@@ -689,7 +685,6 @@
         body: params
       });
 
-      /* Lock option items so selection can't be changed after signing */
       if (isOptionsMode) {
         document.querySelectorAll('.option-item').forEach(function(el) {
           el.style.pointerEvents = 'none';
@@ -702,7 +697,6 @@
 
       freezeForm();
 
-      /* Disable post-submission UI on the page */
       var budgetBtnAfter = document.getElementById('budget-btn');
       if (budgetBtnAfter) {
         budgetBtnAfter.disabled = true;
@@ -711,71 +705,72 @@
       approveBtn.disabled = true;
       approveBtn.classList.add('submitted');
 
-      /* Close the signing modal and replace approval card with thank-you */
       closeSignModal();
-      approvalCard.innerHTML = '<div class="thank-you">&#10003; Thank you! Your signature has been submitted successfully.</div>';
+      var thankYouMessage = approvalPath === 'counter'
+        ? '\u2713 Thank you! Your counter-offer has been submitted. We will be in touch.'
+        : '\u2713 Thank you! Your signature has been submitted successfully.';
+      approvalCard.innerHTML = '<div class="thank-you">' + thankYouMessage + '</div>';
 
     } catch (error) {
       console.error('Submission error:', error);
       alert('Submission error. Please try again.');
       submitBtn.disabled = false;
-      submitBtn.innerText = 'Approve & Submit';
+      submitBtn.innerText = originalSubmitText;
     }
   });
-  }
 
-  /* ── Budget alignment modal logic (ESTIMATE only) ── */
+  /* ── Budget alignment dialog logic — only when wo.budgetAlignment is true ── */
   var budgetBtn = document.getElementById('budget-btn');
   if (budgetBtn) {
-    var overlay = document.getElementById('budget-modal-overlay');
-    var closeBtn = document.getElementById('budget-modal-close');
-    var modalSubmit = document.getElementById('budget-modal-submit');
-    var amountInput = document.getElementById('budget-amount');
-    var notesInput = document.getElementById('budget-notes');
-    var pendingEl = document.getElementById('budget-pending');
-    var pendingAmountEl = document.getElementById('budget-pending-amount');
+    var budgetOverlay = document.getElementById('budget-modal-overlay');
+    var budgetCloseBtn = document.getElementById('budget-modal-close');
+    var budgetModalSubmit = document.getElementById('budget-modal-submit');
+    var budgetAmountInput = document.getElementById('budget-amount');
+    var budgetNotesInput = document.getElementById('budget-notes');
 
-    function openBudgetModal() {
-      overlay.classList.add('open');
-      setTimeout(function() { amountInput.focus(); }, 200);
-    }
+    var openBudgetModal = function() {
+      budgetOverlay.classList.add('open');
+      setTimeout(function() { budgetAmountInput.focus(); }, 200);
+    };
 
-    function closeBudgetModal() {
-      overlay.classList.remove('open');
-    }
+    var closeBudgetModal = function() {
+      budgetOverlay.classList.remove('open');
+    };
 
-    budgetBtn.addEventListener('click', function() {
-      openBudgetModal();
-    });
+    budgetBtn.addEventListener('click', openBudgetModal);
+    budgetCloseBtn.addEventListener('click', closeBudgetModal);
 
-    closeBtn.addEventListener('click', closeBudgetModal);
-
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) closeBudgetModal();
+    budgetOverlay.addEventListener('click', function(e) {
+      if (e.target === budgetOverlay) closeBudgetModal();
     });
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && overlay.classList.contains('open')) {
+      if (e.key === 'Escape' && budgetOverlay.classList.contains('open')) {
         closeBudgetModal();
       }
     });
 
-    modalSubmit.addEventListener('click', function() {
-      var amount = parseFloat(amountInput.value);
+    budgetModalSubmit.addEventListener('click', function() {
+      var amount = parseFloat(budgetAmountInput.value);
       if (!amount || amount <= 0) {
         alert('Please enter your desired budget amount.');
         return;
       }
 
+      pendingBudgetAmount = amount.toFixed(2);
+      pendingBudgetNotes = budgetNotesInput ? budgetNotesInput.value : '';
+
       closeBudgetModal();
 
-      budgetBtn.classList.add('submitted');
-      budgetBtn.textContent = 'Budget Alignment Requested \u2713';
-
-      pendingAmountEl.textContent = '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      pendingEl.style.display = '';
+      /* Allow the budget dialog's slide-down animation to complete
+         before opening the signing modal in counter-offer mode */
+      setTimeout(function() {
+        openSignModal('counter');
+      }, 250);
     });
   }
+
+  } /* end of isEstimate signing-and-budget block */
 
   /* ── Psych price source tooltip (ESTIMATE only) ── */
   var psychSourceBtn = document.querySelector('.psych-source-btn');
