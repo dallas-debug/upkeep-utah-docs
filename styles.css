@@ -1,14 +1,12 @@
 /* ══════════════════════════════════════════════════════════════
-   UPKEEP UTAH — ESTIMATE / INVOICE / WORK ORDER  v4.2
+   UPKEEP UTAH — ESTIMATE / INVOICE / WORK ORDER  v4.3
    MOBILE-FIRST — base styles target phones, min-width scales up
    Palette: Deep slate + burnt orange (#c2410f)
    Fonts: Outfit (display) + DM Sans (body)
    ══════════════════════════════════════════════════════════════ */
 
-/* ── Google Fonts ── */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
-/* ── Custom Properties ── */
 :root {
   --brand:         #1A3646;
   --brand-deep:    #0f172a;
@@ -58,7 +56,6 @@
   --shadow-elevated:0 8px 32px rgba(26,54,70,0.08), 0 2px 8px rgba(26,54,70,0.04);
 }
 
-/* ── Reset ── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -89,11 +86,7 @@ body {
   content: '';
   display: block;
   height: 5px;
-  background: linear-gradient(90deg,
-    var(--brand) 0%,
-    var(--accent) 50%,
-    var(--brand) 100%
-  );
+  background: linear-gradient(90deg, var(--brand) 0%, var(--accent) 50%, var(--brand) 100%);
 }
 
 .header {
@@ -130,11 +123,7 @@ body {
   z-index: 1;
 }
 
-.header-info {
-  flex: 1;
-  position: relative;
-  z-index: 1;
-}
+.header-info { flex: 1; position: relative; z-index: 1; }
 
 .header h1 {
   font-family: var(--font-display);
@@ -153,9 +142,7 @@ body {
   margin-bottom: 1px;
 }
 
-.doc-type {
-  padding: var(--space-xl) var(--space-md) var(--space-sm);
-}
+.doc-type { padding: var(--space-xl) var(--space-md) var(--space-sm); }
 
 .doc-type h2 {
   font-family: var(--font-display);
@@ -184,9 +171,7 @@ body {
   letter-spacing: 0.02em;
 }
 
-.section {
-  padding: var(--space-md) var(--space-md);
-}
+.section { padding: var(--space-md) var(--space-md); }
 
 .section-label {
   font-family: var(--font-display);
@@ -205,10 +190,7 @@ body {
   line-height: 1.6;
 }
 
-.section p strong {
-  color: var(--ink);
-  font-weight: 600;
-}
+.section p strong { color: var(--ink); font-weight: 600; }
 
 .options-instruction {
   font-size: 14px;
@@ -269,9 +251,7 @@ body {
 }
 
 .psych-source-btn:hover sup,
-.psych-source-btn:focus sup {
-  color: var(--accent-hover);
-}
+.psych-source-btn:focus sup { color: var(--accent-hover); }
 
 .psych-source-btn:focus {
   outline: 2px solid var(--accent-glow);
@@ -311,10 +291,7 @@ body {
   transform: rotate(45deg);
 }
 
-.psych-tooltip.fade-out {
-  opacity: 0;
-  transform: translateY(-4px);
-}
+.psych-tooltip.fade-out { opacity: 0; transform: translateY(-4px); }
 
 @keyframes tooltipIn {
   from { opacity: 0; transform: translateY(-4px); }
@@ -328,9 +305,7 @@ body {
   margin-right: calc(-1 * var(--space-md));
 }
 
-.line-item:last-child {
-  border-bottom: none;
-}
+.line-item:last-child { border-bottom: none; }
 
 .li-header {
   display: flex;
@@ -369,10 +344,7 @@ body {
   letter-spacing: -0.01em;
 }
 
-.sub-tasks {
-  margin: 8px 0 0 16px;
-  list-style: none;
-}
+.sub-tasks { margin: 8px 0 0 16px; list-style: none; }
 
 .sub-tasks li {
   font-size: 15px;
@@ -394,9 +366,6 @@ body {
   background: var(--border);
 }
 
-/* ══════════════════════════════════════
-   OPTIONS MODE — SELECTABLE OPTION ITEMS
-   ══════════════════════════════════════ */
 .option-item {
   cursor: pointer;
   border-radius: var(--radius-sm);
@@ -418,18 +387,14 @@ body {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-.option-item.option-selected .li-header {
-  background: rgba(194, 65, 15, 0.08);
-}
+.option-item.option-selected .li-header { background: rgba(194, 65, 15, 0.08); }
 
 .option-item.option-selected .li-title {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
 
-.option-item.option-selected .li-price {
-  color: var(--accent);
-}
+.option-item.option-selected .li-price { color: var(--accent); }
 
 .line-item.adjustment {
   border-bottom: none;
@@ -443,9 +408,7 @@ body {
   border-bottom-color: transparent;
 }
 
-.line-item.adjustment .li-price {
-  color: var(--accent);
-}
+.line-item.adjustment .li-price { color: var(--accent); }
 
 .line-item.adjustment .li-desc {
   font-size: 14px;
@@ -470,9 +433,6 @@ body {
   font-style: italic;
 }
 
-/* ══════════════════════════════════════
-   CONTEXT ANCHORS — right-justified, directly above total
-   ══════════════════════════════════════ */
 .context-anchors {
   padding: var(--space-md) var(--space-md) var(--space-sm);
   margin-top: var(--space-sm);
@@ -507,13 +467,8 @@ body {
   order: 2;
 }
 
-.anchor-item span:not(.anchor-check) {
-  order: 1;
-}
+.anchor-item span:not(.anchor-check) { order: 1; }
 
-/* ══════════════════════════════════════
-   TOTAL BAR
-   ══════════════════════════════════════ */
 .total-bar {
   background: var(--brand);
   color: var(--surface);
@@ -628,14 +583,8 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn-budget:hover {
-  border-color: var(--brand);
-  background: var(--brand-tint);
-}
-
-.btn-budget:active {
-  background: var(--brand-wash);
-}
+.btn-budget:hover { border-color: var(--brand); background: var(--brand-tint); }
+.btn-budget:active { background: var(--brand-wash); }
 
 .btn-budget.submitted {
   background: var(--brand-mid);
@@ -643,34 +592,47 @@ body {
   border-color: var(--brand-mid);
 }
 
-.btn-budget.submitted:hover {
-  background: var(--brand);
-  border-color: var(--brand);
+.btn-budget.submitted:hover { background: var(--brand); border-color: var(--brand); }
+.btn-budget:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ══════════════════════════════════════
+   COUNTER-OFFER SUMMARY inside the signing modal
+   Shown when the customer reaches the modal via Fit My Budget
+   ══════════════════════════════════════ */
+.counter-offer-summary {
+  background: var(--accent-glow);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin-bottom: var(--space-lg);
+  text-align: center;
 }
 
-.btn-budget:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.counter-offer-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
 }
 
-.budget-pending {
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 10px;
-  font-size: 15px;
-  line-height: 1.4;
-}
-
-.budget-pending-amount {
+.counter-offer-amount {
   font-family: var(--font-display);
-  font-weight: 800;
-  color: var(--brand);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  display: block;
+  margin: 4px 0;
 }
 
-.budget-pending-label {
+.counter-offer-context {
+  font-family: var(--font-body);
+  font-size: 14px;
   font-weight: 500;
   color: var(--ink-muted);
   font-style: italic;
@@ -678,7 +640,6 @@ body {
 
 /* ══════════════════════════════════════
    SHARED MODAL OVERLAY (signing & budget)
-   Bottom sheet on mobile, centered card on desktop
    ══════════════════════════════════════ */
 .sign-modal-overlay,
 .budget-modal-overlay {
@@ -752,9 +713,7 @@ body {
 }
 
 .sign-modal-close:hover,
-.budget-modal-close:hover {
-  color: var(--ink);
-}
+.budget-modal-close:hover { color: var(--ink); }
 
 .budget-modal-desc {
   font-size: 15px;
@@ -825,9 +784,7 @@ body {
   margin: 0;
 }
 
-.budget-input::placeholder {
-  color: var(--ink-faint);
-}
+.budget-input::placeholder { color: var(--ink-faint); }
 
 .budget-textarea {
   width: 100%;
@@ -850,9 +807,7 @@ body {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-.budget-textarea::placeholder {
-  color: var(--ink-faint);
-}
+.budget-textarea::placeholder { color: var(--ink-faint); }
 
 .budget-modal-submit {
   width: 100%;
@@ -877,10 +832,7 @@ body {
   transform: translateY(-1px);
 }
 
-.budget-modal-submit:active {
-  background: #8B2E08;
-  transform: translateY(0);
-}
+.budget-modal-submit:active { background: #8B2E08; transform: translateY(0); }
 
 .guarantee {
   text-align: right;
@@ -893,10 +845,7 @@ body {
   letter-spacing: -0.01em;
 }
 
-.pay-now-wrap {
-  padding: var(--space-lg) var(--space-md);
-  text-align: center;
-}
+.pay-now-wrap { padding: var(--space-lg) var(--space-md); text-align: center; }
 
 .pay-now-btn {
   display: inline-block;
@@ -977,9 +926,7 @@ body {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.approval-input::placeholder {
-  color: var(--ink-faint);
-}
+.approval-input::placeholder { color: var(--ink-faint); }
 
 .approval-input:focus {
   border-color: var(--accent);
@@ -1065,14 +1012,8 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn-clear:hover {
-  border-color: var(--ink-muted);
-  color: var(--ink);
-}
-
-.btn-clear:active {
-  background: var(--brand-tint);
-}
+.btn-clear:hover { border-color: var(--ink-muted); color: var(--ink); }
+.btn-clear:active { background: var(--brand-tint); }
 
 .btn-submit {
   width: 100%;
@@ -1114,10 +1055,7 @@ body {
   transform: none;
 }
 
-.btn-clear:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+.btn-clear:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn-submit:active:not(:disabled) {
   background: #8B2E08;
@@ -1136,10 +1074,7 @@ body {
   background: var(--brand-tint);
 }
 
-.approval-section.frozen canvas {
-  cursor: default;
-  pointer-events: none;
-}
+.approval-section.frozen canvas { cursor: default; pointer-events: none; }
 
 .approval-section.frozen .canvas-sig-line { display: none; }
 .approval-section.frozen .canvas-hint { display: none; }
@@ -1173,10 +1108,7 @@ body {
   margin-bottom: var(--space-md);
 }
 
-.error-page p {
-  font-size: 16px;
-  color: var(--ink-muted);
-}
+.error-page p { font-size: 16px; color: var(--ink-muted); }
 
 .footer {
   text-align: center;
@@ -1234,10 +1166,7 @@ body {
   margin-bottom: var(--space-xs);
 }
 
-.footer .company-line {
-  font-size: 13px;
-  color: var(--ink-faint);
-}
+.footer .company-line { font-size: 13px; color: var(--ink-faint); }
 
 @media (min-width: 600px) {
   .page {
@@ -1245,10 +1174,7 @@ body {
     box-shadow: 0 0 80px rgba(26,54,70,0.04);
   }
 
-  .header {
-    padding: var(--space-xl) var(--space-lg) var(--space-lg);
-    gap: 20px;
-  }
+  .header { padding: var(--space-xl) var(--space-lg) var(--space-lg); gap: 20px; }
 
   .header-logo {
     width: 96px;
@@ -1343,6 +1269,8 @@ body {
   .budget-modal-overlay.open .budget-modal {
     transform: translateY(0) scale(1);
   }
+
+  .counter-offer-amount { font-size: 24px; }
 
   .pay-now-btn { padding: 18px 64px; }
 
